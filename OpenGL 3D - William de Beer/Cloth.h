@@ -4,6 +4,7 @@
 #include "ClothNode.h"
 #include "Camera.h"
 #include "InputHandle.h"
+#include <vector>
 
 class Cloth
 {
@@ -21,6 +22,8 @@ private:
 	float m_Spacing;
 	int m_Width;
 	int m_Height;
+
+	std::vector<ClothNode*> m_vRings;
 
 	float PrevMousePosX;
 	float PrevMousePosY;

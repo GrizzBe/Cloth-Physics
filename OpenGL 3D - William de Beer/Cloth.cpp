@@ -6,7 +6,7 @@ Cloth::Cloth(int _width, int _height)
 	PrevMousePosY = 0;
 
 	m_Spacing = 0.2f;
-	m_Gravity = 9.81f;
+	m_Gravity = 2.0f * 9.81f;
 
 	m_Width = _width;
 	m_Height = _height;
@@ -19,7 +19,10 @@ Cloth::Cloth(int _width, int _height)
 		{
 			m_Nodes[i * m_Height + j] = new ClothNode(glm::vec3(i * m_Spacing - (m_Spacing * m_Width - 0.5f) / 2.0f, 2.0f + -j * m_Spacing, 0));
 			if (j == 0 && i % 8 == 0)
+			{
 				m_Nodes[i * m_Height + j]->SetStatic(true);
+				m_vRings.push_back(m_Nodes[i * m_Height + j]);
+			}
 		}
 	}
 
@@ -115,16 +118,15 @@ void Cloth::Render(CCamera* _camera)
 }
 
 void Cloth::Update(float _dT, CCamera* _camera)
-{
+{/*
 	float CurrentMousePosX = CInputHandle::GetInstance().GetMouseX();
 	float DeltaMousePosX = PrevMousePosX - CurrentMousePosX;
 	PrevMousePosX = CurrentMousePosX;
 
 	float CurrentMousePosY = CInputHandle::GetInstance().GetMouseY();
 	float DeltaMousePosY = PrevMousePosY - CurrentMousePosY;
-	PrevMousePosY = CurrentMousePosY;
+	PrevMousePosY = CurrentMousePosY;*/
 
-	bool hitNode = false;
 	if (CInputHandle::GetInstance().GetMouseButtonState(GLUT_LEFT_BUTTON) == InputState::Input_Down)
 	{
 		// Apply external force
@@ -146,13 +148,26 @@ void Cloth::Update(float _dT, CCamera* _camera)
 							glm::vec3 externalForce(_camera->GetRayDirection() * 100.0f);
 							m_Nodes[i * m_Height + j]->ApplyForce(externalForce);
 						}
-						hitNode = true;
-						break;
 					}
 				}
 			}
-			if (hitNode)
-				break;
+		}
+	}
+
+	if (CInputHandle::GetInstance().GetKeyboardState(',') == InputState::Input_Down)
+	{
+		for (auto it : m_vRings)
+		{
+			glm::vec3 oldPos = it->GetPos();
+			it->SetPos(glm::vec3(oldPos.x * (1 - _dT), oldPos.y, oldPos.z));
+		}
+	}
+	if (CInputHandle::GetInstance().GetKeyboardState('.') == InputState::Input_Down)
+	{
+		for (auto it : m_vRings)
+		{
+			glm::vec3 oldPos = it->GetPos();
+			it->SetPos(glm::vec3(oldPos.x * (1 + _dT), oldPos.y, oldPos.z));
 		}
 	}
 
@@ -186,12 +201,8 @@ void Cloth::Update(float _dT, CCamera* _camera)
 
 void Cloth::DropCloth()
 {
-	for (int i = 0; i < m_Width; i++)
+	for (auto it : m_vRings)
 	{
-		for (int j = 0; j < m_Height; j++)
-		{
-			if (m_Nodes[i * m_Height + j]->GetStatic())
-				m_Nodes[i * m_Height + j]->SetStatic(false);
-		}
+		it->SetStatic(false);
 	}
 }

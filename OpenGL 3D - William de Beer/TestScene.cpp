@@ -68,7 +68,7 @@ void CTestScene::Initialise()
 	Program_StencilOutline = ShaderLoader::GetInstance().CreateProgram("NormalSpace.vs", "StencilOutline.fs");
 
 	// Create cloth
-	m_Cloth = new Cloth(49, 40);
+	m_Cloth = new Cloth(49, 49);
 
 	// Create camera
 	m_Cam = new CCamera(true);
