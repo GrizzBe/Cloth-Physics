@@ -20,8 +20,8 @@
  // Implementation
 CTestScene::CTestScene()
 {
-	m_fCurrentTime = 0;
-	m_fPreviousTimeStamp = 0;
+	m_fCurrentTime = (float)glutGet(GLUT_ELAPSED_TIME);
+	m_fPreviousTimeStamp = (float)glutGet(GLUT_ELAPSED_TIME);
 
 	Program_UIAnim = 0;
 	Program_UI = 0;
@@ -68,7 +68,7 @@ void CTestScene::Initialise()
 	Program_StencilOutline = ShaderLoader::GetInstance().CreateProgram("NormalSpace.vs", "StencilOutline.fs");
 
 	// Create cloth
-	m_Cloth = new Cloth(10, 10);
+	m_Cloth = new Cloth(49, 40);
 
 	// Create camera
 	m_Cam = new CCamera(true);
@@ -119,7 +119,7 @@ void CTestScene::Update()
 	float DeltaTime = (m_fCurrentTime - m_fPreviousTimeStamp) * 0.001f;
 	m_fPreviousTimeStamp = m_fCurrentTime;
 
-	m_Cloth->Update(DeltaTime);
+	m_Cloth->Update(DeltaTime, m_Cam);
 	m_Cam->Process(0.0f, 0.0f, 0.0f);
 	m_Ground->Update(DeltaTime);
 
@@ -135,6 +135,15 @@ void CTestScene::Update()
 ********************/
 void CTestScene::ProcessInput()
 {
+
+	// Drop cloth
+	if (CInputHandle::GetInstance().GetKeyboardState('d') == InputState::Input_DownFirst)
+	{
+		CInputHandle::GetInstance().UpdateKeyboardState('d', InputState::Input_Down, 0, 0);
+		m_Cloth->DropCloth();
+	}
+
+
 	// Restart Scene
 	if (CInputHandle::GetInstance().GetKeyboardState('r') == InputState::Input_DownFirst)
 	{

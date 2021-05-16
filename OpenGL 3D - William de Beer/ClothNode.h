@@ -40,8 +40,8 @@ private:
 	bool m_Static;
 	float m_Mass;
 	float m_Damping;
-	float m_Stiffness = 0.4;
-	float m_RestingDistance = 0.5f;
+	float m_Stiffness = 2.0f;
+	float m_RestingDistance = 0.2f;
 
 	ClothNode* m_Top;
 	ClothNode* m_Left;

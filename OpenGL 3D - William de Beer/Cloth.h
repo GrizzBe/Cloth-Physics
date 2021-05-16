@@ -3,6 +3,7 @@
 
 #include "ClothNode.h"
 #include "Camera.h"
+#include "InputHandle.h"
 
 class Cloth
 {
@@ -10,8 +11,8 @@ public:
 	Cloth(int _width, int _height);
 	~Cloth();
 	void Render(CCamera* _camera);
-	void Update(float _dT);
-
+	void Update(float _dT, CCamera* _camera);
+	void DropCloth();
 private:
 
 	float m_Gravity;
@@ -20,6 +21,9 @@ private:
 	float m_Spacing;
 	int m_Width;
 	int m_Height;
+
+	float PrevMousePosX;
+	float PrevMousePosY;
 };
 
 #endif 

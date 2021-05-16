@@ -45,6 +45,7 @@ public:
 
 	void SetRadius(float _radius) { Radius = _radius; };
 	float GetRadius() { return Radius; };
+	glm::vec3 GetRayDirection() { return RayDirection; };
 private:
 	bool m_bIsGame;
 

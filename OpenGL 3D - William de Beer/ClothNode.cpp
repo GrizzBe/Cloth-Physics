@@ -5,8 +5,9 @@ ClothNode::ClothNode(glm::vec3 _pos)
 {
     m_Position = _pos;
     m_PreviousPos = _pos;
-    m_Damping = 100.0;
-    m_Mass = 1.0f;
+    m_Acceleration = glm::vec3(0, 0, 0);
+    m_Damping = 10.0;
+    m_Mass = 0.05f;
     m_Static = false;
 
     m_Top = nullptr;
@@ -22,7 +23,10 @@ ClothNode::~ClothNode()
 void ClothNode::Update(float _dT)
 {
     if (m_Static)
+    {
+        m_Acceleration = glm::vec3(0, 0, 0);
         return;
+    }
 
     // Get velocity
     glm::vec3 velocity = m_Position - m_PreviousPos;

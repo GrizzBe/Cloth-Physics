@@ -54,7 +54,7 @@ int main(int argc, char** argv)
 	}
 
 	// Set clear colour
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(0.8f, 0.6f, 0.6f, 1.0f);
 	glColor3f(0, 1, 0);
 
 	// Culling
