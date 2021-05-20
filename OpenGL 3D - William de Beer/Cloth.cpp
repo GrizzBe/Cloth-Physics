@@ -50,6 +50,12 @@ Cloth::Cloth(int _width, int _height)
 
 			if (i + 1 < m_Width && j + 1 < m_Height)
 				m_Nodes[i * m_Height + j]->SetConnection(Side::BR, m_Nodes[(i + 1) * m_Height + j + 1]);
+	
+			if (i - 1 >= 0 && j - 1 >= 0)
+				m_Nodes[i * m_Height + j]->SetConnection(Side::TL, m_Nodes[(i - 1) * m_Height + j - 1]);
+
+			if (i - 1 >= 0 && j + 1 < m_Height)
+				m_Nodes[i * m_Height + j]->SetConnection(Side::BL, m_Nodes[(i - 1) * m_Height + j + 1]);
 		}
 	}
 
@@ -82,59 +88,59 @@ Cloth::~Cloth()
 
 void Cloth::Render(CCamera* _camera)
 {
-	//glBegin(GL_LINES);
-	//for (int i = 0; i < m_Width; i++)
-	//{
-	//	for (int j = 0; j < m_Height; j++)
-	//	{
-	//		ClothNode* currentNode = m_Nodes[i * m_Height + j];
-	//		if (currentNode->GetConnection(Side::TR) == nullptr)
-	//			continue;
+	glBegin(GL_LINES);
+	for (int i = 0; i < m_Width; i++)
+	{
+		for (int j = 0; j < m_Height; j++)
+		{
+			ClothNode* currentNode = m_Nodes[i * m_Height + j];
+			if (!currentNode->IsEdge())
+				continue;
 
-	//		ClothNode* topNode = currentNode->GetConnection(Side::TOP);
-	//		ClothNode* rightNode = currentNode->GetConnection(Side::RIGHT);
-	//		
-	//		if (topNode != nullptr) // Check if node exists
-	//		{
-	//			// Convert to 3d space
-	//			glm::vec4 pos3D = _camera->GetPVMatrix() * glm::vec4(currentNode->GetPos(), 1.0f);
-	//			glm::vec3 position = glm::vec3(pos3D.x, pos3D.y, pos3D.z) / pos3D.w;
+			ClothNode* topNode = currentNode->GetConnection(Side::TOP);
+			ClothNode* rightNode = currentNode->GetConnection(Side::RIGHT);
+			
+			if (topNode != nullptr) // Check if node exists
+			{
+				// Convert to 3d space
+				glm::vec4 pos3D = _camera->GetPVMatrix() * glm::vec4(currentNode->GetPos(), 1.0f);
+				glm::vec3 position = glm::vec3(pos3D.x, pos3D.y, pos3D.z) / pos3D.w;
 
-	//			// Vertex 1
-	//			glVertex3f(position.x,
-	//				position.y,
-	//				position.z);
+				// Vertex 1
+				glVertex3f(position.x,
+					position.y,
+					position.z);
 
-	//			// Convert to 3d space
-	//			pos3D = _camera->GetPVMatrix() * glm::vec4(topNode->GetPos(), 1.0f);
-	//			position = glm::vec3(pos3D.x, pos3D.y, pos3D.z) / pos3D.w;
+				// Convert to 3d space
+				pos3D = _camera->GetPVMatrix() * glm::vec4(topNode->GetPos(), 1.0f);
+				position = glm::vec3(pos3D.x, pos3D.y, pos3D.z) / pos3D.w;
 
-	//			// Vertex 2
-	//			glVertex3f(position.x,
-	//				position.y,
-	//				position.z);
-	//		}
-	//		
+				// Vertex 2
+				glVertex3f(position.x,
+					position.y,
+					position.z);
+			}
+			
 
-	//		if (rightNode != nullptr)
-	//		{
-	//			glm::vec4 pos3D = _camera->GetPVMatrix() * glm::vec4(currentNode->GetPos(), 1.0f);
-	//			glm::vec3 position = glm::vec3(pos3D.x, pos3D.y, pos3D.z) / pos3D.w;
+			if (rightNode != nullptr)
+			{
+				glm::vec4 pos3D = _camera->GetPVMatrix() * glm::vec4(currentNode->GetPos(), 1.0f);
+				glm::vec3 position = glm::vec3(pos3D.x, pos3D.y, pos3D.z) / pos3D.w;
 
-	//			glVertex3f(position.x,
-	//				position.y,
-	//				position.z);
+				glVertex3f(position.x,
+					position.y,
+					position.z);
 
-	//			pos3D = _camera->GetPVMatrix() * glm::vec4(rightNode->GetPos(), 1.0f);
-	//			position = glm::vec3(pos3D.x, pos3D.y, pos3D.z) / pos3D.w;
+				pos3D = _camera->GetPVMatrix() * glm::vec4(rightNode->GetPos(), 1.0f);
+				position = glm::vec3(pos3D.x, pos3D.y, pos3D.z) / pos3D.w;
 
-	//			glVertex3f(position.x,
-	//				position.y,
-	//				position.z);
-	//		}
-	//	}
-	//}
-	//glEnd();
+				glVertex3f(position.x,
+					position.y,
+					position.z);
+			}
+		}
+	}
+	glEnd();
 
 	m_Quad->Render(m_Program, _camera);
 }
@@ -158,7 +164,7 @@ void Cloth::Update(float _dT, CCamera* _camera)
 			{
 				if (m_Nodes[i * m_Height + j] != nullptr)
 				{
-					if (_camera->CheckIntersection(m_Nodes[i * m_Height + j]->GetPos(), m_Spacing / 2.0f))
+					if (_camera->CheckIntersection(m_Nodes[i * m_Height + j]->GetPos(), m_Spacing))
 					{
 						if (CInputHandle::GetInstance().GetKeyboardState('t') == InputState::Input_Down)
 						{
@@ -174,12 +180,17 @@ void Cloth::Update(float _dT, CCamera* _camera)
 							if (i + 1 < m_Width && j + 1 < m_Height && m_Nodes[i * m_Height + j]->GetConnection(Side::BR) != nullptr)
 								m_Quad->DestroySection((i + 1) * m_Height + j + 1);
 
-							m_Nodes[i * m_Height + j]->SetConnection(Side::TOP, nullptr);
+
+							m_Nodes[i * m_Height + j]->ClearConnections();
+
+							/*m_Nodes[i * m_Height + j]->SetConnection(Side::TOP, nullptr);
 							m_Nodes[i * m_Height + j]->SetConnection(Side::RIGHT, nullptr);
 							m_Nodes[i * m_Height + j]->SetConnection(Side::BOTTOM, nullptr);
 							m_Nodes[i * m_Height + j]->SetConnection(Side::LEFT, nullptr);
 							m_Nodes[i * m_Height + j]->SetConnection(Side::TR, nullptr);
 							m_Nodes[i * m_Height + j]->SetConnection(Side::BR, nullptr);
+							m_Nodes[i * m_Height + j]->SetConnection(Side::TL, nullptr);
+							m_Nodes[i * m_Height + j]->SetConnection(Side::BL, nullptr);*/
 						}
 						else
 						{
