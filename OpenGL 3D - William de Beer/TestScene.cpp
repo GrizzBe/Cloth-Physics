@@ -100,8 +100,8 @@ void CTestScene::Render()
 	GLbitfield BufferCopy = GL_COLOR_BUFFER_BIT;
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	//*******//
-	m_Cloth->Render(m_Cam);
 	m_Ground->Render(Program_Object, m_Cam);
+	m_Cloth->Render(m_Cam);
 	//*******//
 	glUseProgram(0);
 

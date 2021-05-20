@@ -17,7 +17,7 @@ enum class Side {
 class ClothNode
 {
 public:
-	ClothNode(glm::vec3 _pos);
+	ClothNode(glm::vec3 _pos, glm::vec2 _uv);
 	~ClothNode();
 	void Update(float _dT);
 
@@ -29,6 +29,7 @@ public:
 
 	void SetPos(glm::vec3 _pos) { m_Position = _pos; };
 	glm::vec3 GetPos() { return m_Position; };
+	glm::vec2 GetUV() { return m_UV; };
 	float GetMass() { return m_Mass; };
 	ClothNode* GetConnection(Side _side);
 	void SetConnection(Side _side, ClothNode* _node);
@@ -36,6 +37,7 @@ private:
 	glm::vec3 m_Position;
 	glm::vec3 m_PreviousPos;
 	glm::vec3 m_Acceleration;
+	glm::vec2 m_UV;
 
 	bool m_Static;
 	float m_Mass;

@@ -17,6 +17,7 @@
 #include "InputHandle.h"
 #include "Utilities.h"
 #include <iostream>
+#include <algorithm>
  // Implementation
 
 CCamera::CCamera(bool _game)

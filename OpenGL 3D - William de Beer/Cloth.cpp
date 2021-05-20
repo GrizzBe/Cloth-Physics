@@ -2,6 +2,8 @@
 
 Cloth::Cloth(int _width, int _height)
 {
+	m_Program = ShaderLoader::GetInstance().CreateProgram("NormalSpace.vs", "LightingEffects.fs");
+
 	PrevMousePosX = 0;
 	PrevMousePosY = 0;
 
@@ -17,7 +19,8 @@ Cloth::Cloth(int _width, int _height)
 	{
 		for (int j = 0; j < m_Height; j++)
 		{
-			m_Nodes[i * m_Height + j] = new ClothNode(glm::vec3(i * m_Spacing - (m_Spacing * m_Width - 0.5f) / 2.0f, 2.0f + -j * m_Spacing, 0));
+			glm::vec2 uv = glm::vec2((i + 1) / m_Width, (j + 1) / m_Height);
+			m_Nodes[i * m_Height + j] = new ClothNode(glm::vec3(i * m_Spacing - (m_Spacing * m_Width - 0.5f) / 2.0f, 2.0f + -j * m_Spacing, 0), uv);
 			if (j == 0 && i % 8 == 0)
 			{
 				m_Nodes[i * m_Height + j]->SetStatic(true);
@@ -43,6 +46,8 @@ Cloth::Cloth(int _width, int _height)
 				m_Nodes[i * m_Height + j]->SetConnection(Side::RIGHT, m_Nodes[(i + 1) * m_Height + j]);
 		}
 	}
+
+	m_Quad = new ClothQuad(m_Width, m_Height, m_Nodes);
 }
 
 Cloth::~Cloth()
@@ -61,60 +66,68 @@ Cloth::~Cloth()
 
 	delete[] m_Nodes;
 	m_Nodes = 0;
+
+	if (m_Quad != nullptr)
+	{
+		delete m_Quad;
+		m_Quad = 0;
+	}
 }
 
 void Cloth::Render(CCamera* _camera)
 {
-	glBegin(GL_LINES);
-	for (int i = 0; i < m_Width; i++)
-	{
-		for (int j = 0; j < m_Height; j++)
-		{
-			ClothNode* currentNode = m_Nodes[i * m_Height + j];
-			ClothNode* topNode = currentNode->GetConnection(Side::TOP);
+	//glBegin(GL_LINES);
+	//for (int i = 0; i < m_Width; i++)
+	//{
+	//	for (int j = 0; j < m_Height; j++)
+	//	{
+	//		ClothNode* currentNode = m_Nodes[i * m_Height + j];
+	//		ClothNode* topNode = currentNode->GetConnection(Side::TOP);
 
-			if (topNode != nullptr) // Check if node exists
-			{
-				// Convert to 3d space
-				glm::vec4 pos3D = _camera->GetPVMatrix() * glm::vec4(currentNode->GetPos(), 1.0f);
-				glm::vec3 position = glm::vec3(pos3D.x, pos3D.y, pos3D.z) / pos3D.w;
+	//		if (topNode != nullptr) // Check if node exists
+	//		{
+	//			// Convert to 3d space
+	//			glm::vec4 pos3D = _camera->GetPVMatrix() * glm::vec4(currentNode->GetPos(), 1.0f);
+	//			glm::vec3 position = glm::vec3(pos3D.x, pos3D.y, pos3D.z) / pos3D.w;
 
-				// Vertex 1
-				glVertex3f(position.x,
-					position.y,
-					position.z);
+	//			// Vertex 1
+	//			glVertex3f(position.x,
+	//				position.y,
+	//				position.z);
 
-				// Convert to 3d space
-				pos3D = _camera->GetPVMatrix() * glm::vec4(topNode->GetPos(), 1.0f);
-				position = glm::vec3(pos3D.x, pos3D.y, pos3D.z) / pos3D.w;
+	//			// Convert to 3d space
+	//			pos3D = _camera->GetPVMatrix() * glm::vec4(topNode->GetPos(), 1.0f);
+	//			position = glm::vec3(pos3D.x, pos3D.y, pos3D.z) / pos3D.w;
 
-				// Vertex 2
-				glVertex3f(position.x,
-					position.y,
-					position.z);
-			}
-			
-			ClothNode* rightNode = currentNode->GetConnection(Side::RIGHT);
+	//			// Vertex 2
+	//			glVertex3f(position.x,
+	//				position.y,
+	//				position.z);
+	//		}
+	//		
+	//		ClothNode* rightNode = currentNode->GetConnection(Side::RIGHT);
 
-			if (rightNode != nullptr)
-			{
-				glm::vec4 pos3D = _camera->GetPVMatrix() * glm::vec4(currentNode->GetPos(), 1.0f);
-				glm::vec3 position = glm::vec3(pos3D.x, pos3D.y, pos3D.z) / pos3D.w;
+	//		if (rightNode != nullptr)
+	//		{
+	//			glm::vec4 pos3D = _camera->GetPVMatrix() * glm::vec4(currentNode->GetPos(), 1.0f);
+	//			glm::vec3 position = glm::vec3(pos3D.x, pos3D.y, pos3D.z) / pos3D.w;
 
-				glVertex3f(position.x,
-					position.y,
-					position.z);
+	//			glVertex3f(position.x,
+	//				position.y,
+	//				position.z);
 
-				pos3D = _camera->GetPVMatrix() * glm::vec4(rightNode->GetPos(), 1.0f);
-				position = glm::vec3(pos3D.x, pos3D.y, pos3D.z) / pos3D.w;
+	//			pos3D = _camera->GetPVMatrix() * glm::vec4(rightNode->GetPos(), 1.0f);
+	//			position = glm::vec3(pos3D.x, pos3D.y, pos3D.z) / pos3D.w;
 
-				glVertex3f(position.x,
-					position.y,
-					position.z);
-			}
-		}
-	}
-	glEnd();
+	//			glVertex3f(position.x,
+	//				position.y,
+	//				position.z);
+	//		}
+	//	}
+	//}
+	//glEnd();
+
+	m_Quad->Render(m_Program, _camera);
 }
 
 void Cloth::Update(float _dT, CCamera* _camera)
@@ -197,6 +210,7 @@ void Cloth::Update(float _dT, CCamera* _camera)
 			}
 		}
 	}
+	m_Quad->Update(_dT);
 }
 
 void Cloth::DropCloth()

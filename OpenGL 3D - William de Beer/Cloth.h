@@ -1,6 +1,7 @@
 #ifndef __CLOTH_H__
 #define __CLOTH_H__
 
+#include "ClothQuad.h"
 #include "ClothNode.h"
 #include "Camera.h"
 #include "InputHandle.h"
@@ -18,12 +19,17 @@ private:
 
 	float m_Gravity;
 	ClothNode** m_Nodes;
+	ClothQuad* m_Quad;
+	GLuint m_Program;
+
 	glm::vec2 m_Size;
 	float m_Spacing;
 	int m_Width;
 	int m_Height;
 
 	std::vector<ClothNode*> m_vRings;
+
+
 
 	float PrevMousePosX;
 	float PrevMousePosY;

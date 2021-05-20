@@ -1,8 +1,9 @@
 #include "ClothNode.h"
 #include <iostream>
 
-ClothNode::ClothNode(glm::vec3 _pos)
+ClothNode::ClothNode(glm::vec3 _pos, glm::vec2 _uv)
 {
+	m_UV = _uv;
     m_Position = _pos;
     m_PreviousPos = _pos;
     m_Acceleration = glm::vec3(0, 0, 0);

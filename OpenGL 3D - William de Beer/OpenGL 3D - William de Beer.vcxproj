@@ -24,6 +24,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Cloth.cpp" />
     <ClCompile Include="ClothNode.cpp" />
+    <ClCompile Include="ClothQuad.cpp" />
     <ClCompile Include="Cube.cpp" />
     <ClCompile Include="CubeMap.cpp" />
     <ClCompile Include="ImageUI.cpp" />
@@ -48,6 +49,7 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Cloth.h" />
     <ClInclude Include="ClothNode.h" />
+    <ClInclude Include="ClothQuad.h" />
     <ClInclude Include="Cube.h" />
     <ClInclude Include="CubeMap.h" />
     <ClInclude Include="ImageUI.h" />
