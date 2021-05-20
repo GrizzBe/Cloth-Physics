@@ -12,6 +12,8 @@ enum class Side {
 	LEFT,
 	BOTTOM,
 	RIGHT,
+	TR,
+	BR,
 };
 
 class ClothNode
@@ -22,7 +24,7 @@ public:
 	void Update(float _dT);
 
 	void ApplyForce(glm::vec3 _force);
-	void ApplyConstraint(ClothNode* _other);
+	void ApplyConstraint(ClothNode* _other, float _spacing);
 
 	void SetStatic(bool _static) { m_Static = _static; };
 	bool GetStatic() { return m_Static; };

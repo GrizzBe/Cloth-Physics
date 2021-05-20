@@ -55,7 +55,7 @@ int main(int argc, char** argv)
 
 	// Set clear colour
 	glClearColor(0.8f, 0.6f, 0.6f, 1.0f);
-	glColor3f(0, 0, 0);
+	glColor3f(0, 1, 0);
 
 	// Culling
 	glFrontFace(GL_CCW);

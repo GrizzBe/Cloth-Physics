@@ -51,14 +51,14 @@ void ClothNode::ApplyForce(glm::vec3 _force)
     m_Acceleration += _force / m_Mass;
 }
 
-void ClothNode::ApplyConstraint(ClothNode* _other)
+void ClothNode::ApplyConstraint(ClothNode* _other, float _spacing)
 {
     if (_other == nullptr)
         return;
 
     glm::vec3 delta = m_Position - _other->GetPos();
     float deltaLength = glm::distance(m_Position, _other->GetPos());
-    float difference = (m_RestingDistance - deltaLength) / deltaLength;
+    float difference = (_spacing - deltaLength) / deltaLength;
 
     float Im1 = 1 / m_Mass;
     float Im2 = 1 / _other->GetMass();

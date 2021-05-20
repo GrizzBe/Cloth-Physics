@@ -42,6 +42,7 @@ public:
 	void CreateVertices();
 	void CreateIndices();
 	void CreateVAO();
+	void DestroySection(int _pos);
 private:
 	GLuint EBO; // Indices
 	GLuint VBO; // Vertices

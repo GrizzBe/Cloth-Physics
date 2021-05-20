@@ -76,13 +76,13 @@ void CTestScene::Initialise()
 
 	// Create ground
 	m_Ground = new Quad();
-	m_Ground->SetPosition(glm::vec3(0, -10, 0));
+	m_Ground->SetPosition(glm::vec3(0, -10.1, 0));
 	m_Ground->SetScale(glm::vec3(20, 1, 20));
 	m_Ground->SetReflectivity(1.0f);
 	m_Ground->SetTexture("Map/Ground.jpg");
 
 	// Create light
-	CLightSource* newLight = new CLightSource(glm::vec3(0.0f, 10.0f, 0.0f));
+	CLightSource* newLight = new CLightSource(glm::vec3(0.0f, 0.0f, 5.0f));
 	newLight->SetColor(glm::vec3(1.0f, 0.9f, 0.9f));
 	CLightManager::GetInstance().AddLight(newLight);
 
@@ -117,6 +117,11 @@ void CTestScene::Update()
 	// Get delta time
 	m_fCurrentTime = (float)glutGet(GLUT_ELAPSED_TIME);
 	float DeltaTime = (m_fCurrentTime - m_fPreviousTimeStamp) * 0.001f;
+	if (DeltaTime < 0.016)
+	{
+		return;
+	}
+
 	m_fPreviousTimeStamp = m_fCurrentTime;
 
 	m_Cloth->Update(DeltaTime, m_Cam);

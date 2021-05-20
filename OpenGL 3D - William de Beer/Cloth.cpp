@@ -2,13 +2,13 @@
 
 Cloth::Cloth(int _width, int _height)
 {
-	m_Program = ShaderLoader::GetInstance().CreateProgram("NormalSpace.vs", "LightingEffects.fs");
+	m_Program = ShaderLoader::GetInstance().CreateProgram("NormalSpace.vs", "Texture.fs");
 
 	PrevMousePosX = 0;
 	PrevMousePosY = 0;
 
-	m_Spacing = 0.2f;
-	m_Gravity = 2.0f * 9.81f;
+	m_Spacing = 0.1f;
+	m_Gravity = 0.8f * 9.81f;
 
 	m_Width = _width;
 	m_Height = _height;
@@ -19,7 +19,7 @@ Cloth::Cloth(int _width, int _height)
 	{
 		for (int j = 0; j < m_Height; j++)
 		{
-			glm::vec2 uv = glm::vec2((i + 1) / m_Width, (j + 1) / m_Height);
+			glm::vec2 uv((i + 1) / (float)m_Width, (j + 1) / (float)m_Height);
 			m_Nodes[i * m_Height + j] = new ClothNode(glm::vec3(i * m_Spacing - (m_Spacing * m_Width - 0.5f) / 2.0f, 2.0f + -j * m_Spacing, 0), uv);
 			if (j == 0 && i % 8 == 0)
 			{
@@ -44,6 +44,12 @@ Cloth::Cloth(int _width, int _height)
 
 			if (i + 1 < m_Width)
 				m_Nodes[i * m_Height + j]->SetConnection(Side::RIGHT, m_Nodes[(i + 1) * m_Height + j]);
+		
+			if (i + 1 < m_Width && j - 1 >= 0)
+				m_Nodes[i * m_Height + j]->SetConnection(Side::TR, m_Nodes[(i + 1) * m_Height + j - 1]);
+
+			if (i + 1 < m_Width && j + 1 < m_Height)
+				m_Nodes[i * m_Height + j]->SetConnection(Side::BR, m_Nodes[(i + 1) * m_Height + j + 1]);
 		}
 	}
 
@@ -82,8 +88,12 @@ void Cloth::Render(CCamera* _camera)
 	//	for (int j = 0; j < m_Height; j++)
 	//	{
 	//		ClothNode* currentNode = m_Nodes[i * m_Height + j];
-	//		ClothNode* topNode = currentNode->GetConnection(Side::TOP);
+	//		if (currentNode->GetConnection(Side::TR) == nullptr)
+	//			continue;
 
+	//		ClothNode* topNode = currentNode->GetConnection(Side::TOP);
+	//		ClothNode* rightNode = currentNode->GetConnection(Side::RIGHT);
+	//		
 	//		if (topNode != nullptr) // Check if node exists
 	//		{
 	//			// Convert to 3d space
@@ -105,7 +115,6 @@ void Cloth::Render(CCamera* _camera)
 	//				position.z);
 	//		}
 	//		
-	//		ClothNode* rightNode = currentNode->GetConnection(Side::RIGHT);
 
 	//		if (rightNode != nullptr)
 	//		{
@@ -149,12 +158,28 @@ void Cloth::Update(float _dT, CCamera* _camera)
 			{
 				if (m_Nodes[i * m_Height + j] != nullptr)
 				{
-					if (_camera->CheckIntersection(m_Nodes[i * m_Height + j]->GetPos(), m_Spacing))
+					if (_camera->CheckIntersection(m_Nodes[i * m_Height + j]->GetPos(), m_Spacing / 2.0f))
 					{
 						if (CInputHandle::GetInstance().GetKeyboardState('t') == InputState::Input_Down)
 						{
+							if (j - 1 >= 0 && m_Nodes[i * m_Height + j]->GetConnection(Side::TOP) != nullptr)
+								m_Quad->DestroySection(i * m_Height + (j - 1));
+
+							if (i + 1 < m_Width && m_Nodes[i * m_Height + j]->GetConnection(Side::RIGHT) != nullptr)
+								m_Quad->DestroySection((i + 1) * m_Height + j);
+
+							if (i + 1 < m_Width && j - 1 >= 0 && m_Nodes[i * m_Height + j]->GetConnection(Side::TR) != nullptr)
+								m_Quad->DestroySection((i + 1) * m_Height + j - 1);
+							
+							if (i + 1 < m_Width && j + 1 < m_Height && m_Nodes[i * m_Height + j]->GetConnection(Side::BR) != nullptr)
+								m_Quad->DestroySection((i + 1) * m_Height + j + 1);
+
 							m_Nodes[i * m_Height + j]->SetConnection(Side::TOP, nullptr);
 							m_Nodes[i * m_Height + j]->SetConnection(Side::RIGHT, nullptr);
+							m_Nodes[i * m_Height + j]->SetConnection(Side::BOTTOM, nullptr);
+							m_Nodes[i * m_Height + j]->SetConnection(Side::LEFT, nullptr);
+							m_Nodes[i * m_Height + j]->SetConnection(Side::TR, nullptr);
+							m_Nodes[i * m_Height + j]->SetConnection(Side::BR, nullptr);
 						}
 						else
 						{
@@ -205,8 +230,10 @@ void Cloth::Update(float _dT, CCamera* _camera)
 		{
 			if (m_Nodes[i * m_Height + j] != nullptr)
 			{
-				m_Nodes[i * m_Height + j]->ApplyConstraint(m_Nodes[i * m_Height + j]->GetConnection(Side::TOP));
-				m_Nodes[i * m_Height + j]->ApplyConstraint(m_Nodes[i * m_Height + j]->GetConnection(Side::RIGHT));
+				m_Nodes[i * m_Height + j]->ApplyConstraint(m_Nodes[i * m_Height + j]->GetConnection(Side::TOP), m_Spacing);
+				m_Nodes[i * m_Height + j]->ApplyConstraint(m_Nodes[i * m_Height + j]->GetConnection(Side::RIGHT), m_Spacing);
+				m_Nodes[i * m_Height + j]->ApplyConstraint(m_Nodes[i * m_Height + j]->GetConnection(Side::TR), sqrtf(pow(m_Spacing, 2) * 2.0f));
+				m_Nodes[i * m_Height + j]->ApplyConstraint(m_Nodes[i * m_Height + j]->GetConnection(Side::BR), sqrtf(pow(m_Spacing, 2) * 2.0f));
 			}
 		}
 	}

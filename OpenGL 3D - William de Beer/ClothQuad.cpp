@@ -2,7 +2,8 @@
 
 ClothQuad::ClothQuad(int _width, int _height, ClothNode** _nodes)
 {
-	SetTexture("Doggy.png");
+	SetTexture("Picnic.jpg");
+	SetShininess(32);
 
 	m_ClothNodes = _nodes;
 	m_Width = _width;
@@ -68,7 +69,7 @@ void ClothQuad::Update(float _dT)
 		m_Vertices[i + 2] = m_ClothNodes[i / 8]->GetPos().z;
 		m_Vertices[i + 3] = 0;
 		m_Vertices[i + 4] = 0;
-		m_Vertices[i + 5] = -1;
+		m_Vertices[i + 5] = 0;
 		m_Vertices[i + 6] = m_ClothNodes[i / 8]->GetUV().x;
 		m_Vertices[i + 7] = m_ClothNodes[i / 8]->GetUV().y;
 	}
@@ -88,14 +89,14 @@ void ClothQuad::CreateVertices()
 
 void ClothQuad::CreateIndices()
 {
-	for (unsigned int i = 0; i < m_Width; i++)
+	for (unsigned int i = 0; i < m_Width - 1; i++)
 	{
-		unsigned int col1 = i * (m_Width + 1);
-		unsigned int col2 = (i + 1) * (m_Width + 1);
-		for (unsigned int j = 0; j < m_Width; j++)
+		unsigned int row1 = i * (m_Width);
+		unsigned int row2 = (i + 1) * (m_Width);
+		for (unsigned int j = 0; j < m_Width - 1; j++)
 		{
-			m_AllIndices.push_back(glm::uvec3(col1 + j, col1 + j + 1, col2 + j + 1));
-			m_AllIndices.push_back(glm::uvec3(col1 + j, col2 + j + 1, col2 + j + 1));
+			m_AllIndices.push_back(glm::uvec3(row1 + j, row1 + j + 1, row2 + j + 1));
+			m_AllIndices.push_back(glm::uvec3(row1 + j, row2 + j, row2 + j + 1));
 		}
 	}
 	m_Indices = new GLuint[m_AllIndices.size() * 3];
@@ -126,4 +127,16 @@ void ClothQuad::CreateVAO()
 
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(2);
+}
+
+void ClothQuad::DestroySection(int _pos)
+{
+	auto it = m_AllIndices.begin();
+	while (it != m_AllIndices.end())
+	{
+		if ((*it).x == _pos || (*it).y == _pos || (*it).z == _pos)
+			it = m_AllIndices.erase(it);
+		else
+			it++;
+	}
 }
