@@ -7,9 +7,10 @@ ClothNode::ClothNode(glm::vec3 _pos, glm::vec2 _uv)
     m_Position = _pos;
     m_PreviousPos = _pos;
     m_Acceleration = glm::vec3(0, 0, 0);
-    m_Damping = 10.0;
-    m_Mass = 0.05f;
+    m_Damping = 10.0f;
+    m_Mass = 1.0f;
     m_Static = false;
+    m_Connected = true;
 
     m_Top = nullptr;
     m_Left = nullptr;
@@ -28,12 +29,23 @@ void ClothNode::Update(float _dT)
         m_Acceleration = glm::vec3(0, 0, 0);
         return;
     }
+    float magAcceleration = glm::distance(glm::vec3(0, 0, 0), m_Acceleration);
+    if (magAcceleration > 10.0f)
+    {
+        m_Acceleration = glm::normalize(m_Acceleration) * 10.0f;
+    }
 
     // Get velocity
     glm::vec3 velocity = m_Position - m_PreviousPos;
+    float magVelocity = glm::distance(glm::vec3(0, 0, 0), velocity);
+    if (magVelocity > m_MaxSpeed)
+    {
+        velocity = glm::normalize(velocity) * m_MaxSpeed;
+    }
 
     // Apply damping
-    m_Acceleration -= velocity * m_Damping / m_Mass;
+    m_Acceleration -= m_Acceleration * _dT * m_Damping / m_Mass;
+
 
     // Apply physics to position
     glm::vec3 newPos = m_Position + velocity + 0.5f * m_Acceleration * powf(_dT, 2);
@@ -43,7 +55,9 @@ void ClothNode::Update(float _dT)
         newPos.y = -10.0f;
     m_Position = newPos;
 
-    m_Acceleration = glm::vec3(0, 0, 0);
+
+
+   // m_Acceleration = glm::vec3(0, 0, 0);
 }
 
 void ClothNode::ApplyForce(glm::vec3 _force)
@@ -58,7 +72,7 @@ void ClothNode::ApplyConstraint(ClothNode* _other, float _spacing)
 
     glm::vec3 delta = m_Position - _other->GetPos();
     float deltaLength = glm::distance(m_Position, _other->GetPos());
-    float difference = (_spacing - deltaLength) / deltaLength;
+    float difference = ((_spacing * m_RestingDistance) - deltaLength) / deltaLength;
 
     float Im1 = 1 / m_Mass;
     float Im2 = 1 / _other->GetMass();
@@ -138,7 +152,7 @@ void ClothNode::SetConnection(Side _side, ClothNode* _node)
 
 void ClothNode::ClearConnections()
 {
-	/*if (GetConnection(Side::TOP) != nullptr)
+	if (GetConnection(Side::TOP) != nullptr)
 		GetConnection(Side::TOP)->SetConnection(Side::BOTTOM, nullptr);
 
 	if (GetConnection(Side::RIGHT) != nullptr)
@@ -160,7 +174,7 @@ void ClothNode::ClearConnections()
 		GetConnection(Side::TL)->SetConnection(Side::BR, nullptr);
 
 	if (GetConnection(Side::BL) != nullptr)
-		GetConnection(Side::BL)->SetConnection(Side::TR, nullptr);*/
+		GetConnection(Side::BL)->SetConnection(Side::TR, nullptr);
 
 	SetConnection(Side::TOP, nullptr);
 	SetConnection(Side::RIGHT, nullptr);
@@ -170,4 +184,39 @@ void ClothNode::ClearConnections()
 	SetConnection(Side::BR, nullptr);
 	SetConnection(Side::TL, nullptr);
 	SetConnection(Side::BL, nullptr);
+
+    m_Connected = false;
+}
+
+void ClothNode::RenderConnectionLines(CCamera* _camera, Side _side)
+{
+    if (_side == Side::TOP || _side == Side::RIGHT || _side == Side::BOTTOM || _side == Side::LEFT)
+    {
+        glColor3f(1, 0, 0);
+    }
+    else
+    {
+        glColor3f(1, 1, 1);
+    }
+    ClothNode* node = GetConnection(_side);
+    if (node != nullptr)
+    {
+        // Convert to 3d space
+        glm::vec4 pos3D = _camera->GetPVMatrix() * glm::vec4(GetPos(), 1.0f);
+        glm::vec3 position = glm::vec3(pos3D.x, pos3D.y, pos3D.z) / pos3D.w;
+
+        // Vertex 1
+        glVertex3f(position.x,
+            position.y,
+            position.z);
+
+        // Convert to 3d space
+        pos3D = _camera->GetPVMatrix() * glm::vec4(node->GetPos(), 1.0f);
+        position = glm::vec3(pos3D.x, pos3D.y, pos3D.z) / pos3D.w;
+
+        // Vertex 2
+        glVertex3f(position.x,
+            position.y,
+            position.z);
+    }
 }

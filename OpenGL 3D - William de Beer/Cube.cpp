@@ -86,32 +86,34 @@ Cube::Cube()
 		Indices[i] = Indices_Cube[i];
 	}
 
-	GLuint EBO;
-	GLuint VBO;
+	VAO = ShaderLoader::GetInstance().CreateVAO(Vertices, Indices, sizeof(Vertices_Cube), sizeof(Indices_Cube));
 
-	// VAO
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
+	//GLuint EBO;
+	//GLuint VBO;
 
-	// EBO
-	glGenBuffers(1, &EBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices_Cube), Indices, GL_STATIC_DRAW);
+	//// VAO
+	//glGenVertexArrays(1, &VAO);
+	//glBindVertexArray(VAO);
 
-	// VBO
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices_Cube), Vertices, GL_STATIC_DRAW);
+	//// EBO
+	//glGenBuffers(1, &EBO);
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices_Cube), Indices, GL_STATIC_DRAW);
 
-	// Vertex Attributes
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(0);
+	//// VBO
+	//glGenBuffers(1, &VBO);
+	//glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices_Cube), Vertices, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(1);
+	//// Vertex Attributes
+	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
+	//glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(2);
+	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+	//glEnableVertexAttribArray(1);
+
+	//glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat)));
+	//glEnableVertexAttribArray(2);
 
 
 	IndiceCount = sizeof(Indices_Cube);

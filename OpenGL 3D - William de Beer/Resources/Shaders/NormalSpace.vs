@@ -15,11 +15,12 @@ uniform mat4 LightVPMatrix;
 
 void main()
 {
-	gl_Position = PVM * vec4(Position, 1.0f);
 	FragPos = vec3(ModelMat * vec4(Position, 1.0f));
 	FragNormal = mat3(transpose(inverse(ModelMat))) * Normal;
 	FragTexCoords = TexCoords;
 	
 	// Shadow
 	FragPosLightSpace = LightVPMatrix * vec4(FragPos, 1.0f);
+	
+	gl_Position = PVM * vec4(Position, 1.0f); 
 }

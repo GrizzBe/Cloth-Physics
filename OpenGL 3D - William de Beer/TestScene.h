@@ -44,6 +44,8 @@ private:
 	float m_fCurrentTime; 
 	float m_fPreviousTimeStamp;
 
+	bool m_bUseWireframe;
+
 	GLuint Program_UIAnim;
 	GLuint Program_UI;
 	GLuint Program_Object;

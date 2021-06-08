@@ -1,6 +1,7 @@
 #ifndef __CLOTH_NODE_H__
 #define __CLOTH_NODE_H__
 
+#include "Camera.h"
 #include <glew.h>
 #include <freeglut.h>
 #include <glm.hpp>
@@ -41,6 +42,8 @@ public:
 	void SetConnection(Side _side, ClothNode* _node);
 
 	void ClearConnections();
+	void RenderConnectionLines(CCamera* _camera, Side _side);
+	bool GetConnectionStatus() { return m_Connected; };
 private:
 	glm::vec3 m_Position;
 	glm::vec3 m_PreviousPos;
@@ -48,10 +51,12 @@ private:
 	glm::vec2 m_UV;
 
 	bool m_Static;
+	bool m_Connected;
 	float m_Mass;
 	float m_Damping;
-	float m_Stiffness = 0.8f;
-	float m_RestingDistance = 0.2f;
+	float m_Stiffness = 1.2f;
+	float m_RestingDistance = 1.0f;
+	float m_MaxSpeed = 10.0f;
 
 	ClothNode* m_Top;
 	ClothNode* m_Left;

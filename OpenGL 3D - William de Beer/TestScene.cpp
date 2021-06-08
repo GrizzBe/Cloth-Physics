@@ -22,6 +22,7 @@ CTestScene::CTestScene()
 {
 	m_fCurrentTime = (float)glutGet(GLUT_ELAPSED_TIME);
 	m_fPreviousTimeStamp = (float)glutGet(GLUT_ELAPSED_TIME);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	Program_UIAnim = 0;
 	Program_UI = 0;
@@ -140,6 +141,20 @@ void CTestScene::Update()
 ********************/
 void CTestScene::ProcessInput()
 {
+	// Wireframe toggle
+	if (CInputHandle::GetInstance().GetKeyboardState('f') == InputState::Input_DownFirst)
+	{
+		CInputHandle::GetInstance().UpdateKeyboardState('f', InputState::Input_Down, 0, 0);
+		m_bUseWireframe = !m_bUseWireframe;
+		if (m_bUseWireframe)
+		{
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // Use wireframe 
+		}
+		else
+		{
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		}
+	}
 
 	// Drop cloth
 	if (CInputHandle::GetInstance().GetKeyboardState('d') == InputState::Input_DownFirst)
