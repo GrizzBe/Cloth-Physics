@@ -32,11 +32,19 @@ public:
 	void SetStatic(bool _static) { m_Static = _static; };
 	bool GetStatic() { return m_Static; };
 
+	void CatchFire() { m_OnFire = true; };
+	void CalculateFire(float _dT);
+	bool IsOnFire() { return m_OnFire; };
+	float GetFireLevel() { return m_FireLevel; };
+	void SetFireLevel(float _fireLevel) { m_FireLevel = _fireLevel; };
+	float GetHeatResistance() { return m_fHeatResistance; };
+
 	bool IsEdge();
 
 	void SetPos(glm::vec3 _pos) { m_Position = _pos; };
 	glm::vec3 GetPos() { return m_Position; };
 	glm::vec2 GetUV() { return m_UV; };
+	glm::vec3 GetColor() { return m_Color; };
 	float GetMass() { return m_Mass; };
 	ClothNode* GetConnection(Side _side);
 	void SetConnection(Side _side, ClothNode* _node);
@@ -44,11 +52,13 @@ public:
 	void ClearConnections();
 	void RenderConnectionLines(CCamera* _camera, Side _side);
 	bool GetConnectionStatus() { return m_Connected; };
+	bool GetToBeDestroyed() { return m_ToBeDestroyed; };
 private:
 	glm::vec3 m_Position;
 	glm::vec3 m_PreviousPos;
 	glm::vec3 m_Acceleration;
 	glm::vec2 m_UV;
+	glm::vec3 m_Color;
 
 	bool m_Static;
 	bool m_Connected;
@@ -56,7 +66,14 @@ private:
 	float m_Damping;
 	float m_Stiffness = 1.2f;
 	float m_RestingDistance = 1.0f;
+	float m_BreakingDistance = 2.5f;
 	float m_MaxSpeed = 10.0f;
+	float m_fHeatResistance;
+
+	bool m_ToBeDestroyed;
+
+	float m_FireLevel;
+	bool m_OnFire;
 
 	ClothNode* m_Top;
 	ClothNode* m_Left;

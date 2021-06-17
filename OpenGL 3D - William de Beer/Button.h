@@ -28,6 +28,7 @@ public:
 	virtual void Process();
 
 	bool ActivateButton();
+	
 private:
 	float m_fOffset;
 	float m_fFrameWidth;

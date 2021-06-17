@@ -7,15 +7,25 @@ ClothNode::ClothNode(glm::vec3 _pos, glm::vec2 _uv)
     m_Position = _pos;
     m_PreviousPos = _pos;
     m_Acceleration = glm::vec3(0, 0, 0);
+    m_Color = glm::vec3(1.0f, 1.0f, 1.0f);
     m_Damping = 10.0f;
     m_Mass = 1.0f;
     m_Static = false;
     m_Connected = true;
+    m_OnFire = false;
+    m_ToBeDestroyed = false;
+    m_FireLevel = 0.0f;
+
+    m_fHeatResistance = rand() % 20 + 80;
 
     m_Top = nullptr;
     m_Left = nullptr;
     m_Bottom = nullptr;
     m_Right = nullptr;
+    m_TL = nullptr;
+    m_TR = nullptr;
+    m_BL = nullptr;
+    m_BR = nullptr;
 }
 
 ClothNode::~ClothNode()
@@ -51,13 +61,23 @@ void ClothNode::Update(float _dT)
     glm::vec3 newPos = m_Position + velocity + 0.5f * m_Acceleration * powf(_dT, 2);
     m_PreviousPos = m_Position;
 
+    // Floor
     if (newPos.y < -10.0f)
         newPos.y = -10.0f;
+    if (newPos.x < -10.0f)
+        newPos.x = -10.0f;
+    if (newPos.x > 10.0f)
+        newPos.x = 10.0f;
+    if (newPos.z < -10.0f)
+        newPos.z = -10.0f;
+    if (newPos.z > 10.0f)
+        newPos.z = 10.0f;
     m_Position = newPos;
 
+   
 
-
-   // m_Acceleration = glm::vec3(0, 0, 0);
+    CalculateFire(_dT);
+    m_Color = glm::vec3(1.0f, 1.0f - 0.5f * (m_FireLevel / 100.0f), 1.0f - (m_FireLevel / 100.0f));
 }
 
 void ClothNode::ApplyForce(glm::vec3 _force)
@@ -72,6 +92,11 @@ void ClothNode::ApplyConstraint(ClothNode* _other, float _spacing)
 
     glm::vec3 delta = m_Position - _other->GetPos();
     float deltaLength = glm::distance(m_Position, _other->GetPos());
+    if (deltaLength > m_BreakingDistance)
+    {
+        m_ToBeDestroyed = true;
+    }
+
     float difference = ((_spacing * m_RestingDistance) - deltaLength) / deltaLength;
 
     float Im1 = 1 / m_Mass;
@@ -85,6 +110,50 @@ void ClothNode::ApplyConstraint(ClothNode* _other, float _spacing)
 
     if (!_other->GetStatic())
         _other->SetPos(_other->GetPos() - otherMult * (delta * (Im2 / (Im1 + Im2)) * m_Stiffness * difference));
+}
+
+void ClothNode::CalculateFire(float _dT)
+{
+    if (!m_OnFire)
+        return;
+
+    m_FireLevel += _dT * 10;
+    if (m_FireLevel > 50)
+    {
+        if (m_Bottom != nullptr)
+            m_Bottom->CatchFire();
+    }
+    else if (m_FireLevel > 40)
+    {
+        if (m_BL != nullptr)
+            m_BL->CatchFire();
+        if (m_BR != nullptr)
+            m_BR->CatchFire();
+    }
+    else if (m_FireLevel > 30)
+    {
+        if (m_Left != nullptr)
+            m_Left->CatchFire();
+        if (m_Right != nullptr)
+            m_Right->CatchFire();
+    }
+    else if (m_FireLevel > 20)
+    {
+        if (m_TL != nullptr)
+            m_TL->CatchFire();
+        if (m_TR != nullptr)
+            m_TR->CatchFire();
+    }
+    else if (m_FireLevel > 10)
+    {
+        if (m_Top != nullptr)
+            m_Top->CatchFire();
+    }
+
+    if (m_FireLevel >= m_fHeatResistance)
+    {
+        m_ToBeDestroyed = true;
+    }
 }
 
 bool ClothNode::IsEdge()
@@ -190,14 +259,20 @@ void ClothNode::ClearConnections()
 
 void ClothNode::RenderConnectionLines(CCamera* _camera, Side _side)
 {
-    if (_side == Side::TOP || _side == Side::RIGHT || _side == Side::BOTTOM || _side == Side::LEFT)
+    /*if (_side == Side::TOP || _side == Side::RIGHT || _side == Side::BOTTOM || _side == Side::LEFT)
     {
         glColor3f(1, 0, 0);
     }
     else
     {
+    }*/
+
+    if (m_OnFire)
+        glColor3f(m_Color.x, m_Color.y, m_Color.z);
+    else
         glColor3f(1, 1, 1);
-    }
+
+
     ClothNode* node = GetConnection(_side);
     if (node != nullptr)
     {

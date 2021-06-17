@@ -7,6 +7,13 @@
 #include "InputHandle.h"
 #include <vector>
 
+struct GrabInfo {
+	int i;
+	int j;
+	float distance;
+	bool grabbing = false;
+};
+
 class Cloth
 {
 public:
@@ -15,7 +22,11 @@ public:
 	void Render(CCamera* _camera);
 	void Update(float _dT, CCamera* _camera);
 	void DropCloth();
-private:
+
+	void ApplyWind(glm::vec3 _windOrigin);
+	void TearCloth(int _i, int _j);
+	void IgniteCloth(int _i, int _j);
+private: 
 
 	float m_Gravity;
 	ClothNode** m_Nodes;
@@ -29,7 +40,7 @@ private:
 
 	std::vector<ClothNode*> m_vRings;
 
-
+	GrabInfo grab;
 
 	float PrevMousePosX;
 	float PrevMousePosY;

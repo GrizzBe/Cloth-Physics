@@ -79,13 +79,15 @@ void CButton::Process()
 	float MouseX = (float)CInputHandle::GetInstance().GetMouseX() - screenWidth / 2;
 	float MouseY = (float)CInputHandle::GetInstance().GetMouseY() - screenHeight / 2;
 
+
+
 	float BoundryX = (CUtilities::GetInstance().GetResolution().x * Size.x) / 2;
 	float BoundryY = (CUtilities::GetInstance().GetResolution().y * Size.y) / 2;
 
-	if ((MouseX > (Pos.x * screenWidth / 2) - BoundryX) &&
-		(MouseX < (Pos.x * screenWidth / 2) + BoundryX) &&
-		(MouseY > (Pos.y * -screenHeight / 2) - BoundryY) &&
-		(MouseY < (Pos.y * -screenHeight / 2) + BoundryY))
+	if ((MouseX > (ObjPosition.x * screenWidth / 2) - BoundryX) &&
+		(MouseX < (ObjPosition.x * screenWidth / 2) + BoundryX) &&
+		(MouseY > (ObjPosition.y * -screenHeight / 2) - BoundryY) &&
+		(MouseY < (ObjPosition.y * -screenHeight / 2) + BoundryY))
 	{
 		m_fOffset = m_fFrameWidth;
 	}
@@ -112,10 +114,10 @@ bool CButton::ActivateButton()
 	float BoundryY = (CUtilities::GetInstance().GetResolution().x * Size.y) / (CUtilities::GetInstance().GetScreenRatio() * 2);
 
 	// Local bounds for button
-	if ((MouseX > (Pos.x * screenWidth / 2) - BoundryX) &&
-		(MouseX < (Pos.x * screenWidth / 2) + BoundryX) &&
-		(MouseY > (Pos.y * -screenHeight / 2) - BoundryY) &&
-		(MouseY < (Pos.y * -screenHeight / 2) + BoundryY))
+	if ((MouseX > (ObjPosition.x * screenWidth / 2) - BoundryX) &&
+		(MouseX < (ObjPosition.x * screenWidth / 2) + BoundryX) &&
+		(MouseY > (ObjPosition.y * -screenHeight / 2) - BoundryY) &&
+		(MouseY < (ObjPosition.y * -screenHeight / 2) + BoundryY))
 	{
 		if (CInputHandle::GetInstance().GetMouseButtonState(GLUT_LEFT_BUTTON) == InputState::Input_Down)
 		{

@@ -40,6 +40,8 @@ public:
 	virtual void Draw(GLuint _program, CCamera* _cam);
 	virtual void Process(); 
 	void SetTexture(std::string _tex);
+	void SetPosition(glm::vec3 _pos) { ObjPosition = _pos; };
+	glm::vec3 GetPosition() { return ObjPosition; };
 protected:
 	GLfloat* m_Vertices;
 	GLuint* m_Indices;

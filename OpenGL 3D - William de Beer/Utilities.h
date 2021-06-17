@@ -32,12 +32,22 @@ public:
 	glm::vec2 GetResolution();
 	float GetScreenRatio();
 
+
+	glm::vec2 GetClothSize() { return ClothSize; };
+	void SetClothSize(glm::vec2 _size) { ClothSize = _size; };
+
+	int GetHooksAmount() { return HookNo; };
+	void SetHooksAmount(int _hookNo) { HookNo = _hookNo; };
+
 private:
 	CUtilities();
 	static CUtilities* sm_Instance;
 
 	glm::vec2 m_vResolution;
 	float m_fScreenRatio;
+
+	glm::vec2 ClothSize;
+	int HookNo;
 };
 
 #endif // __UTILITIES_H__

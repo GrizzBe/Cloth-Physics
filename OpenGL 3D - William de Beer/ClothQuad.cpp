@@ -67,9 +67,9 @@ void ClothQuad::Update(float _dT)
 		m_Vertices[i + 0] = m_ClothNodes[i / 8]->GetPos().x;
 		m_Vertices[i + 1] = m_ClothNodes[i / 8]->GetPos().y;
 		m_Vertices[i + 2] = m_ClothNodes[i / 8]->GetPos().z;
-		m_Vertices[i + 3] = 0;
-		m_Vertices[i + 4] = 0;
-		m_Vertices[i + 5] = 0;
+		m_Vertices[i + 3] = m_ClothNodes[i / 8]->GetColor().x;
+		m_Vertices[i + 4] = m_ClothNodes[i / 8]->GetColor().y;
+		m_Vertices[i + 5] = m_ClothNodes[i / 8]->GetColor().z;
 		m_Vertices[i + 6] = m_ClothNodes[i / 8]->GetUV().x;
 		m_Vertices[i + 7] = m_ClothNodes[i / 8]->GetUV().y;
 	}

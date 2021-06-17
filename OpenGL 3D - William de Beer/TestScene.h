@@ -18,11 +18,13 @@
 #include "Button.h"
 #include "Camera.h"
 #include "Cloth.h"
+#include "Cube.h"
 #include "CubeMap.h"
 #include "ImageUI.h"
 #include "InputHandle.h"
 #include "Quad.h"
 #include "Scene.h"
+#include "Slider.h"
  // Implementation 
 class CTestScene : public CScene
 {
@@ -39,12 +41,15 @@ public:
 	virtual void MouseMotionTrackingPassive(int X, int Y);
 	virtual void MouseMotionTrackingInteracting(int X, int Y);
 
+	void FanMove();
 private:
 
 	float m_fCurrentTime; 
 	float m_fPreviousTimeStamp;
+	float m_fDeltaTime;
 
 	bool m_bUseWireframe;
+	bool m_bActiveFan;
 
 	GLuint Program_UIAnim;
 	GLuint Program_UI;
@@ -52,9 +57,13 @@ private:
 	GLuint Program_Water;
 	GLuint Program_StencilOutline;
 
+	glm::vec3 m_FanMove;
+
 	Cloth* m_Cloth;
 	CCamera* m_Cam;
 	Quad* m_Ground;
+	Cube* m_Fan;
+	Slider* m_Slider;
 };
 
 #endif
