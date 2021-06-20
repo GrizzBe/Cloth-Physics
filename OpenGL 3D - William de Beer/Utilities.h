@@ -19,7 +19,9 @@
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
+#include <wincrypt.h>
  // Implementation 
+
 
 class CUtilities
 {
@@ -29,6 +31,10 @@ public:
 	static CUtilities& GetInstance();
 	static void RemoveInstance();
 
+	static float PlanePointValue(glm::vec3 _normal, glm::vec3 _planePosition, glm::vec3 _pointPosition);
+	static bool PlanePointCollision(glm::vec3 _normal, glm::vec3 _planePosition, glm::vec3 _pointPosition);
+	static float DotProduct(glm::vec3 _LHS, glm::vec3 _RHS);
+
 	glm::vec2 GetResolution();
 	float GetScreenRatio();
 
@@ -36,8 +42,14 @@ public:
 	glm::vec2 GetClothSize() { return ClothSize; };
 	void SetClothSize(glm::vec2 _size) { ClothSize = _size; };
 
-	int GetHooksAmount() { return HookNo; };
-	void SetHooksAmount(int _hookNo) { HookNo = _hookNo; };
+	int GetHookDensity() { return HookNo; };
+	void SetHookDensity(int _hookNo) { HookNo = _hookNo; };
+
+	struct PlaneInfo {
+		int index;
+		glm::vec3 normal;
+		glm::vec3 position;
+	};
 
 private:
 	CUtilities();

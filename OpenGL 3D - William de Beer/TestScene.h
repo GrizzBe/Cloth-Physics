@@ -22,9 +22,11 @@
 #include "CubeMap.h"
 #include "ImageUI.h"
 #include "InputHandle.h"
+#include "Pyramid.h"
 #include "Quad.h"
 #include "Scene.h"
 #include "Slider.h"
+#include "Sphere.h"
  // Implementation 
 class CTestScene : public CScene
 {
@@ -41,8 +43,16 @@ public:
 	virtual void MouseMotionTrackingPassive(int X, int Y);
 	virtual void MouseMotionTrackingInteracting(int X, int Y);
 
-	void FanMove();
+	void Move();
+	void ApplyMovement(CObject* _object);
 private:
+
+	enum class ControlledObject {
+		FAN,
+		SPHERE,
+		PYRAMID,
+	};
+
 
 	float m_fCurrentTime; 
 	float m_fPreviousTimeStamp;
@@ -57,13 +67,20 @@ private:
 	GLuint Program_Water;
 	GLuint Program_StencilOutline;
 
-	glm::vec3 m_FanMove;
+	glm::vec3 m_Move;
+
+	ControlledObject object;
 
 	Cloth* m_Cloth;
 	CCamera* m_Cam;
 	Quad* m_Ground;
 	Cube* m_Fan;
-	Slider* m_Slider;
+	Pyramid* m_Pyramid;
+	Sphere* m_Sphere;
+
+	Slider* m_HeightSlider;
+	Slider* m_WidthSlider;
+	Slider* m_HookSlider;
 };
 
 #endif

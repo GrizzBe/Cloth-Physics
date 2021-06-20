@@ -1,5 +1,5 @@
-#ifndef __CUBE_H__
-#define __CUBE_H__
+#ifndef __PYRAMID_H__
+#define __PYRAMID_H__
 // 
 //  Bachelor of Software Engineering 
 //  Media Design School 
@@ -8,8 +8,8 @@
 // 
 //  (c) 2021 Media Design School 
 // 
-//  File Name   :   Cube.h
-//  Description :   Cube object.
+//  File Name   :   Pyramid.h
+//  Description :   Pyramid object.
 //  Author      :   William de Beer 
 //  Mail        :   William.Beer@mds.ac.nz
 // 
@@ -29,11 +29,13 @@
 #include "LightManager.h"
 #include "ShaderLoader.h"
  // Implementation 
-class Cube : public CObject
+#include "Object.h"
+class Pyramid :
+    public CObject
 {
 public:
-	Cube();
-	virtual ~Cube();
+	Pyramid();
+	virtual ~Pyramid();
 
 	virtual void Render(GLuint _program, CCamera* _cam);
 	virtual void Update(float _dT);

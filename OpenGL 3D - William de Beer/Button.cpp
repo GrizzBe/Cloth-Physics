@@ -110,8 +110,8 @@ bool CButton::ActivateButton()
 	float MouseX = (float)CInputHandle::GetInstance().GetMouseX() - screenWidth / 2;
 	float MouseY = (float)CInputHandle::GetInstance().GetMouseY() - screenHeight / 2;
 
-	float BoundryX = ((CUtilities::GetInstance().GetResolution().y * Size.x) / 2);
-	float BoundryY = (CUtilities::GetInstance().GetResolution().x * Size.y) / (CUtilities::GetInstance().GetScreenRatio() * 2);
+	float BoundryX = (CUtilities::GetInstance().GetResolution().x * Size.x) / 2;
+	float BoundryY = (CUtilities::GetInstance().GetResolution().y * Size.y) / 2;
 
 	// Local bounds for button
 	if ((MouseX > (ObjPosition.x * screenWidth / 2) - BoundryX) &&

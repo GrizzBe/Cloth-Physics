@@ -14,6 +14,13 @@ struct GrabInfo {
 	bool grabbing = false;
 };
 
+enum class CollisionType {
+	CUBE,
+	SPHERE,
+	CLOTHNODE,
+	PYRAMID,
+};
+
 class Cloth
 {
 public:
@@ -23,9 +30,12 @@ public:
 	void Update(float _dT, CCamera* _camera);
 	void DropCloth();
 
+	void CalculateCollision(CollisionType _type, glm::vec3 _pos, glm::vec3 _scale);
+	void Untangle();
 	void ApplyWind(glm::vec3 _windOrigin);
 	void TearCloth(int _i, int _j);
 	void IgniteCloth(int _i, int _j);
+
 private: 
 
 	float m_Gravity;

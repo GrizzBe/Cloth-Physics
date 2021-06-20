@@ -7,7 +7,7 @@ ClothQuad::ClothQuad(int _width, int _height, ClothNode** _nodes)
 
 	m_ClothNodes = _nodes;
 	m_Width = _width;
-	m_Height = _width;
+	m_Height = _height;
 
 	CreateVertices();
 	CreateIndices();
@@ -51,7 +51,7 @@ void ClothQuad::Render(GLuint _program, CCamera* _cam)
 	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(GLuint) * m_AllIndices.size() * 3, m_Indices);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GLfloat) * m_Width * m_Width * 8, m_Vertices);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GLfloat) * m_Width * m_Height * 8, m_Vertices);
 
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, m_AllIndices.size() * 3, GL_UNSIGNED_INT, 0);
@@ -62,7 +62,7 @@ void ClothQuad::Render(GLuint _program, CCamera* _cam)
 
 void ClothQuad::Update(float _dT)
 {
-	for (unsigned int i = 0; i < m_Width * m_Width * 8; i += 8)
+	for (unsigned int i = 0; i < m_Width * m_Height * 8; i += 8)
 	{
 		m_Vertices[i + 0] = m_ClothNodes[i / 8]->GetPos().x;
 		m_Vertices[i + 1] = m_ClothNodes[i / 8]->GetPos().y;
@@ -84,16 +84,16 @@ void ClothQuad::Update(float _dT)
 
 void ClothQuad::CreateVertices()
 {
-	m_Vertices = new GLfloat[m_Width * m_Width * 8];
+	m_Vertices = new GLfloat[m_Width * m_Height * 8];
 }
 
 void ClothQuad::CreateIndices()
 {
 	for (unsigned int i = 0; i < m_Width - 1; i++)
 	{
-		unsigned int row1 = i * (m_Width);
-		unsigned int row2 = (i + 1) * (m_Width);
-		for (unsigned int j = 0; j < m_Width - 1; j++)
+		unsigned int row1 = i * (m_Height);
+		unsigned int row2 = (i + 1) * (m_Height);
+		for (unsigned int j = 0; j < m_Height - 1; j++)
 		{
 			m_AllIndices.push_back(glm::uvec3(row1 + j, row1 + j + 1, row2 + j + 1));
 			m_AllIndices.push_back(glm::uvec3(row1 + j, row2 + j, row2 + j + 1));
@@ -116,7 +116,7 @@ void ClothQuad::CreateVAO()
 	// VBO
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * m_Width * m_Width * 8, m_Vertices, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * m_Width * m_Height * 8, m_Vertices, GL_DYNAMIC_DRAW);
 
 	// Vertex Attributes
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);

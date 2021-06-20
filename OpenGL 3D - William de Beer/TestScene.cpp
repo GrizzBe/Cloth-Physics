@@ -34,7 +34,10 @@ CTestScene::CTestScene()
 	m_Ground = 0;
 	m_Cam = 0;
 	m_Cloth = 0;
-	m_Slider = 0;
+
+	m_HeightSlider = 0;
+	m_WidthSlider = 0;
+	m_HookSlider = 0;
 
 	m_bUseWireframe = false;
 	m_bActiveFan = false;
@@ -57,10 +60,20 @@ CTestScene::~CTestScene()
 		delete m_Cam;
 		m_Cam = 0;
 	}
-	if (m_Slider != nullptr)
+	if (m_HeightSlider != nullptr)
 	{
-		delete m_Slider;
-		m_Slider = 0;
+		delete m_HeightSlider;
+		m_HeightSlider = 0;
+	}
+	if (m_WidthSlider != nullptr)
+	{
+		delete m_WidthSlider;
+		m_WidthSlider = 0;
+	}
+	if (m_HookSlider != nullptr)
+	{
+		delete m_HookSlider;
+		m_HookSlider = 0;
 	}
 	CLightManager::RemoveInstance();
 }
@@ -77,6 +90,14 @@ void CTestScene::Initialise()
 	Program_Water = ShaderLoader::GetInstance().CreateProgram("WobbleSpace.vs", "LightingEffectsFog.fs");
 	Program_Object = ShaderLoader::GetInstance().CreateProgram("NormalSpace.vs", "LightingEffects.fs");
 	Program_StencilOutline = ShaderLoader::GetInstance().CreateProgram("NormalSpace.vs", "StencilOutline.fs");
+	
+	// Create size slider
+	m_WidthSlider = new Slider(glm::vec2(-0.95f, -0.7f), glm::vec2(0.02f, 0.02f), 2, 49, CUtilities::GetInstance().GetClothSize().x, "Cloth Width");
+	m_HeightSlider = new Slider(glm::vec2(-0.95f, -0.8f), glm::vec2(0.02f, 0.02f), 2, 49, CUtilities::GetInstance().GetClothSize().y, "Cloth Height");
+
+	// Create hook slider
+	m_HookSlider = new Slider(glm::vec2(-0.95f, -0.9f), glm::vec2(0.02f, 0.02f), 1, 25, CUtilities::GetInstance().GetHookDensity(), "Hook Density");
+
 
 	// Create cloth
 	m_Cloth = new Cloth(CUtilities::GetInstance().GetClothSize().x, CUtilities::GetInstance().GetClothSize().y);
@@ -88,8 +109,20 @@ void CTestScene::Initialise()
 	// Create fan
 	m_Fan = new Cube();
 	m_Fan->SetPosition(glm::vec3(0.0f, -5.1, -5.0f));
-	m_Fan->SetScale(glm::vec3(1, 1, 1));
+	m_Fan->SetScale(glm::vec3(1.0f , 1.0f , 1.0f));
 	m_Fan->SetTexture("Fan.png");
+
+	// Create sphere
+	m_Sphere = new Sphere();
+	m_Sphere->SetPosition(glm::vec3(3.0f, -5.1, -5.0f));
+	m_Sphere->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
+	m_Sphere->SetTexture("Map/earth.jpg");
+
+	// Create pyramid
+	m_Pyramid = new Pyramid();
+	m_Pyramid->SetPosition(glm::vec3(-3.0f, -5.1, -5.0f));
+	m_Pyramid->SetScale(glm::vec3(2.0f, 2.0f, 2.0f));
+	m_Pyramid->SetTexture("Pyramid.png");
 
 	// Create ground
 	m_Ground = new Quad();
@@ -98,9 +131,7 @@ void CTestScene::Initialise()
 	m_Ground->SetReflectivity(1.0f);
 	m_Ground->SetTexture("Map/Ground.jpg");
 
-	// Create size slider
-	m_Slider = new Slider(glm::vec2(), glm::vec2(0.02f, 0.02f), 2, 49, CUtilities::GetInstance().GetClothSize().x);
-
+	
 	// Create light
 	CLightSource* newLight = new CLightSource(glm::vec3(0.0f, 0.0f, 5.0f));
 	newLight->SetColor(glm::vec3(1.0f, 0.9f, 0.9f));
@@ -123,9 +154,13 @@ void CTestScene::Render()
 	m_Ground->Render(Program_Object, m_Cam);
 	m_Cloth->Render(m_Cam);
 	m_Fan->Render(Program_Object, m_Cam);
+	m_Sphere->Render(Program_Object, m_Cam);
+	m_Pyramid->Render(Program_Object, m_Cam);
 
 	glDisable(GL_DEPTH_TEST);
-	m_Slider->Render(Program_UI, m_Cam);
+	m_HeightSlider->Render(Program_UI, m_Cam);
+	m_WidthSlider->Render(Program_UI, m_Cam);
+	m_HookSlider->Render(Program_UI, m_Cam);
 	glEnable(GL_DEPTH_TEST);
 	//*******//
 	glUseProgram(0);
@@ -150,17 +185,43 @@ void CTestScene::Update()
 
 	m_fPreviousTimeStamp = m_fCurrentTime;
 
-	m_Fan->SetPosition(m_Fan->GetPosition() + m_FanMove * m_fDeltaTime);
+	switch (object)
+	{
+	case ControlledObject::FAN:
+		ApplyMovement(m_Fan);
+		break;
+	case ControlledObject::SPHERE:
+		ApplyMovement(m_Sphere);
+		break;
+	case ControlledObject::PYRAMID:
+		ApplyMovement(m_Pyramid);
+		break;
+	default:
+		break;
+	}
+	//m_Fan->SetPosition(m_Fan->GetPosition() + m_Move * m_fDeltaTime);
+
 	m_Fan->Update(m_fDeltaTime);
+	m_Sphere->Update(m_fDeltaTime);
+	m_Pyramid->Update(m_fDeltaTime);
 
 	if (m_bActiveFan)
 	{
 		m_Cloth->ApplyWind(m_Fan->GetPosition());
 	}
+
+	m_Cloth->CalculateCollision(CollisionType::SPHERE, m_Sphere->GetPosition(), m_Sphere->GetScale());
+	m_Cloth->CalculateCollision(CollisionType::CUBE, m_Fan->GetPosition(), m_Fan->GetScale());
+	m_Cloth->CalculateCollision(CollisionType::PYRAMID, m_Pyramid->GetPosition(), m_Pyramid->GetScale());
+
+	//m_Cloth->Untangle();
+
 	m_Cloth->Update(m_fDeltaTime, m_Cam);
 	m_Cam->Process(0.0f, 0.0f, 0.0f);
 	m_Ground->Update(m_fDeltaTime);
-	m_Slider->Update(m_fDeltaTime);
+
+	CUtilities::GetInstance().SetClothSize(glm::vec2(m_WidthSlider->Update(m_fDeltaTime), m_HeightSlider->Update(m_fDeltaTime)));
+	CUtilities::GetInstance().SetHookDensity(m_HookSlider->Update(m_fDeltaTime));
 
 	CAudioManager::GetInstance().Process();
 	glutPostRedisplay();
@@ -189,6 +250,25 @@ void CTestScene::ProcessInput()
 		}
 	}
 
+	// Set fan to be controlled
+	if (CInputHandle::GetInstance().GetKeyboardState('1') == InputState::Input_DownFirst)
+	{
+		CInputHandle::GetInstance().UpdateKeyboardState('1', InputState::Input_Down, 0, 0);
+		object = ControlledObject::FAN;
+	}
+	// Set sphere to be controlled
+	if (CInputHandle::GetInstance().GetKeyboardState('2') == InputState::Input_DownFirst)
+	{
+		CInputHandle::GetInstance().UpdateKeyboardState('2', InputState::Input_Down, 0, 0);
+		object = ControlledObject::SPHERE;
+	}
+	// Set fan to be controlled
+	if (CInputHandle::GetInstance().GetKeyboardState('3') == InputState::Input_DownFirst)
+	{
+		CInputHandle::GetInstance().UpdateKeyboardState('3', InputState::Input_Down, 0, 0);
+		object = ControlledObject::PYRAMID;
+	}
+
 	// Drop cloth
 	if (CInputHandle::GetInstance().GetKeyboardState('v') == InputState::Input_DownFirst)
 	{
@@ -203,7 +283,7 @@ void CTestScene::ProcessInput()
 		m_bActiveFan = !m_bActiveFan;
 	}
 
-	FanMove();
+	Move();
 
 	// Restart Scene
 	if (CInputHandle::GetInstance().GetKeyboardState('r') == InputState::Input_DownFirst)
@@ -268,10 +348,10 @@ void CTestScene::MouseMotionTrackingInteracting(int X, int Y)
 	CInputHandle::GetInstance().UpdateMousePosition(X, Y);
 }
 
-void CTestScene::FanMove()
+void CTestScene::Move()
 {
-	m_FanMove = glm::vec3(0, 0, 0);
-	float speed = 10.0f;
+	m_Move = glm::vec3(0, 0, 0);
+	float speed = 5.0f;
 
 	// Update button presses.
 	if (CInputHandle::GetInstance().GetKeyboardState('w') == InputState::Input_DownFirst)
@@ -302,35 +382,35 @@ void CTestScene::FanMove()
 
 	if (CInputHandle::GetInstance().GetKeyboardState('w') == InputState::Input_Down)
 	{
-		m_FanMove.z += 1;
+		m_Move.z += 1;
 	}
 	if (CInputHandle::GetInstance().GetKeyboardState('s') == InputState::Input_Down)
 	{
-		m_FanMove.z -= 1;
+		m_Move.z -= 1;
 	}
 	if (CInputHandle::GetInstance().GetKeyboardState('a') == InputState::Input_Down)
 	{
-		m_FanMove.x -= 1;
+		m_Move.x -= 1;
 	}
 	if (CInputHandle::GetInstance().GetKeyboardState('d') == InputState::Input_Down)
 	{
-		m_FanMove.x += 1;
+		m_Move.x += 1;
 	}
 	if (CInputHandle::GetInstance().GetKeyboardState('q') == InputState::Input_Down)
 	{
-		m_FanMove.y += 1;
+		m_Move.y += 1;
 	}
 	if (CInputHandle::GetInstance().GetKeyboardState('e') == InputState::Input_Down)
 	{
-		m_FanMove.y -= 1;
+		m_Move.y -= 1;
 	}
 
 	// If moving
-	if (m_FanMove != glm::vec3(0, 0, 0))
+	if (m_Move != glm::vec3(0, 0, 0))
 	{
-		glm::vec3 newMove = glm::normalize(m_FanMove);
+		glm::vec3 newMove = glm::normalize(m_Move);
 
-		glm::vec3 camDirection = m_Cam->GetCamPos() - m_Fan->GetPosition();
+		glm::vec3 camDirection = m_Cam->GetCamPos();
 		camDirection.y = 0;
 		camDirection = glm::normalize(camDirection);
 
@@ -339,7 +419,6 @@ void CTestScene::FanMove()
 
 		glm::vec3 move = glm::vec3(0, 0, 0);
 		move.x = newMove.x * sinf(angle) + newMove.z * cosf(angle);
-		move.y = newMove.y;
 		move.z = newMove.x * cosf(angle) - newMove.z * sinf(angle);
 
 		if (camDirection.x >= 0)
@@ -347,8 +426,31 @@ void CTestScene::FanMove()
 			move = -move;
 		}
 
+		move.y = newMove.y;
+
 		// Apply movement
-		m_FanMove = glm::normalize(move) * speed;
+		m_Move = glm::normalize(move) * speed;
+	}
+}
+
+void CTestScene::ApplyMovement(CObject* _object)
+{
+	_object->SetPosition(_object->GetPosition() + m_Move * m_fDeltaTime);
+	if (_object->GetPosition().x > 10.0f)
+	{
+		_object->SetPosition(glm::vec3(10.0f, _object->GetPosition().y, _object->GetPosition().z));
+	}
+	if (_object->GetPosition().x < -10.0f)
+	{
+		_object->SetPosition(glm::vec3(-10.0f, _object->GetPosition().y, _object->GetPosition().z));
+	}
+	if (_object->GetPosition().z > 10.0f)
+	{
+		_object->SetPosition(glm::vec3(_object->GetPosition().x, _object->GetPosition().y, 10.0f));
+	}
+	if (_object->GetPosition().z < -10.0f)
+	{
+		_object->SetPosition(glm::vec3(_object->GetPosition().x, _object->GetPosition().y, -10.0f));
 	}
 }
 

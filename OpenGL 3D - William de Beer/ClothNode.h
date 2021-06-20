@@ -64,10 +64,10 @@ private:
 	bool m_Connected;
 	float m_Mass;
 	float m_Damping;
-	float m_Stiffness = 1.2f;
+	float m_Stiffness = 1.5f;
 	float m_RestingDistance = 1.0f;
-	float m_BreakingDistance = 2.5f;
-	float m_MaxSpeed = 10.0f;
+	float m_BreakingDistance = 5.0f;
+	float m_MaxSpeed = 20.0f;
 	float m_fHeatResistance;
 
 	bool m_ToBeDestroyed;
