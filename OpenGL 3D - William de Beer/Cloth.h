@@ -19,6 +19,7 @@ enum class CollisionType {
 	SPHERE,
 	CLOTHNODE,
 	PYRAMID,
+	CAPSULE,
 };
 
 class Cloth

@@ -20,7 +20,7 @@ CUtilities::CUtilities()
 {
 	m_vResolution = glm::vec2( 1200.0f , 800.0f );
 	m_fScreenRatio = m_vResolution.x / m_vResolution.y;
-	ClothSize = glm::vec2(25, 25);
+	ClothSize = glm::vec2(19, 19);
 	HookNo = 8;
 }
 

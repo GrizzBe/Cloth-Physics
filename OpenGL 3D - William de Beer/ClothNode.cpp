@@ -92,10 +92,10 @@ void ClothNode::ApplyConstraint(ClothNode* _other, float _spacing)
 
     glm::vec3 delta = m_Position - _other->GetPos();
     float deltaLength = glm::distance(m_Position, _other->GetPos());
-    if (deltaLength > _spacing * m_BreakingDistance)
+    /*if (deltaLength > _spacing * m_BreakingDistance)
     {
         m_ToBeDestroyed = true;
-    }
+    }*/
 
     float difference = ((_spacing * m_RestingDistance) - deltaLength) / deltaLength;
 

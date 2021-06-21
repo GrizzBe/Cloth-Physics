@@ -268,107 +268,112 @@ void Cloth::CalculateCollision(CollisionType _type, glm::vec3 _pos, glm::vec3 _s
 {
 	glm::vec3 size;
 	float radius;
+	float height;
+	float collisionBonus = 0.025f;
 	switch (_type)
 	{
 	case CollisionType::CUBE:
-		size = (_scale / 2.0f) + 0.05f;
+		size = (_scale / 2.0f) + collisionBonus;
 		for (int i = 0; i < m_Width; i++)
 		{
 			for (int j = 0; j < m_Height; j++)
 			{
-				if ((m_Nodes[i * m_Height + j]->GetPos().x >= (_pos.x -size.x) && m_Nodes[i * m_Height + j]->GetPos().x <= (_pos.x + size.x)) &&
-					(m_Nodes[i * m_Height + j]->GetPos().y >= (_pos.y -size.y) && m_Nodes[i * m_Height + j]->GetPos().y <= (_pos.y + size.y)) &&
-					(m_Nodes[i * m_Height + j]->GetPos().z >= (_pos.z -size.z) && m_Nodes[i * m_Height + j]->GetPos().z <= (_pos.z + size.z)))
+				if (m_Nodes[i * m_Height + j] != nullptr && !m_Nodes[i * m_Height + j]->GetStatic())
 				{
-					int closestSide = -1;
-					float furthestDistanceToCenter = 0.0f;
-					// Find closest side
-					if ((m_Nodes[i * m_Height + j]->GetPos().x >= (_pos.x - size.x) && m_Nodes[i * m_Height + j]->GetPos().x <= (_pos.x + size.x)))
+					if ((m_Nodes[i * m_Height + j]->GetPos().x >= (_pos.x - size.x) && m_Nodes[i * m_Height + j]->GetPos().x <= (_pos.x + size.x)) &&
+						(m_Nodes[i * m_Height + j]->GetPos().y >= (_pos.y - size.y) && m_Nodes[i * m_Height + j]->GetPos().y <= (_pos.y + size.y)) &&
+						(m_Nodes[i * m_Height + j]->GetPos().z >= (_pos.z - size.z) && m_Nodes[i * m_Height + j]->GetPos().z <= (_pos.z + size.z)))
 					{
-						float distanceToCenter = abs(m_Nodes[i * m_Height + j]->GetPos().x - _pos.x);
-						if (distanceToCenter > furthestDistanceToCenter)
+						int closestSide = -1;
+						float furthestDistanceToCenter = 0.0f;
+						// Find closest side
+						if ((m_Nodes[i * m_Height + j]->GetPos().x >= (_pos.x - size.x) && m_Nodes[i * m_Height + j]->GetPos().x <= (_pos.x + size.x)))
 						{
-							furthestDistanceToCenter = distanceToCenter;
-							closestSide = 1;
+							float distanceToCenter = abs(m_Nodes[i * m_Height + j]->GetPos().x - _pos.x);
+							if (distanceToCenter > furthestDistanceToCenter)
+							{
+								furthestDistanceToCenter = distanceToCenter;
+								closestSide = 1;
+							}
 						}
-					}
-					if ((m_Nodes[i * m_Height + j]->GetPos().y >= (_pos.y - size.y) && m_Nodes[i * m_Height + j]->GetPos().y <= (_pos.y + size.y)))
-					{
-						float distanceToCenter = abs(m_Nodes[i * m_Height + j]->GetPos().y - _pos.y);
-						if (distanceToCenter > furthestDistanceToCenter)
+						if ((m_Nodes[i * m_Height + j]->GetPos().y >= (_pos.y - size.y) && m_Nodes[i * m_Height + j]->GetPos().y <= (_pos.y + size.y)))
 						{
-							furthestDistanceToCenter = distanceToCenter;
-							closestSide = 2;
+							float distanceToCenter = abs(m_Nodes[i * m_Height + j]->GetPos().y - _pos.y);
+							if (distanceToCenter > furthestDistanceToCenter)
+							{
+								furthestDistanceToCenter = distanceToCenter;
+								closestSide = 2;
+							}
 						}
-					}
-					if ((m_Nodes[i * m_Height + j]->GetPos().z >= (_pos.z - size.z) && m_Nodes[i * m_Height + j]->GetPos().z <= (_pos.z + size.z)))
-					{
-						float distanceToCenter = abs(m_Nodes[i * m_Height + j]->GetPos().z - _pos.z);
-						if (distanceToCenter > furthestDistanceToCenter)
+						if ((m_Nodes[i * m_Height + j]->GetPos().z >= (_pos.z - size.z) && m_Nodes[i * m_Height + j]->GetPos().z <= (_pos.z + size.z)))
 						{
-							furthestDistanceToCenter = distanceToCenter;
-							closestSide = 3;
+							float distanceToCenter = abs(m_Nodes[i * m_Height + j]->GetPos().z - _pos.z);
+							if (distanceToCenter > furthestDistanceToCenter)
+							{
+								furthestDistanceToCenter = distanceToCenter;
+								closestSide = 3;
+							}
 						}
-					}
 
-					switch (closestSide)
-					{
-					case 1:
-						if (m_Nodes[i * m_Height + j]->GetPos().x < _pos.x)
+						switch (closestSide)
 						{
-							m_Nodes[i * m_Height + j]->SetPos(glm::vec3(_pos.x - size.x,
-								m_Nodes[i * m_Height + j]->GetPos().y, 
-								m_Nodes[i * m_Height + j]->GetPos().z));
+						case 1:
+							if (m_Nodes[i * m_Height + j]->GetPos().x < _pos.x)
+							{
+								m_Nodes[i * m_Height + j]->SetPos(glm::vec3(_pos.x - size.x,
+									m_Nodes[i * m_Height + j]->GetPos().y,
+									m_Nodes[i * m_Height + j]->GetPos().z));
+							}
+							else
+							{
+								m_Nodes[i * m_Height + j]->SetPos(glm::vec3(_pos.x + size.x,
+									m_Nodes[i * m_Height + j]->GetPos().y,
+									m_Nodes[i * m_Height + j]->GetPos().z));
+							}
+							break;
+						case 2:
+							if (m_Nodes[i * m_Height + j]->GetPos().y < _pos.y)
+							{
+								m_Nodes[i * m_Height + j]->SetPos(glm::vec3(m_Nodes[i * m_Height + j]->GetPos().x,
+									_pos.y - size.y,
+									m_Nodes[i * m_Height + j]->GetPos().z));
+							}
+							else
+							{
+								m_Nodes[i * m_Height + j]->SetPos(glm::vec3(m_Nodes[i * m_Height + j]->GetPos().x,
+									_pos.y + size.y,
+									m_Nodes[i * m_Height + j]->GetPos().z));
+							}
+							break;
+						case 3:
+							if (m_Nodes[i * m_Height + j]->GetPos().z < _pos.z)
+							{
+								m_Nodes[i * m_Height + j]->SetPos(glm::vec3(m_Nodes[i * m_Height + j]->GetPos().x,
+									m_Nodes[i * m_Height + j]->GetPos().y,
+									_pos.z - size.z));
+							}
+							else
+							{
+								m_Nodes[i * m_Height + j]->SetPos(glm::vec3(m_Nodes[i * m_Height + j]->GetPos().x,
+									m_Nodes[i * m_Height + j]->GetPos().y,
+									_pos.z + size.z));
+							}
+							break;
+						default:
+							break;
 						}
-						else
-						{
-							m_Nodes[i * m_Height + j]->SetPos(glm::vec3(_pos.x + size.x,
-								m_Nodes[i * m_Height + j]->GetPos().y,
-								m_Nodes[i * m_Height + j]->GetPos().z));
-						}
-						break;
-					case 2:
-						if (m_Nodes[i * m_Height + j]->GetPos().y < _pos.y)
-						{
-							m_Nodes[i * m_Height + j]->SetPos(glm::vec3(m_Nodes[i * m_Height + j]->GetPos().x,
-								_pos.y - size.y,
-								m_Nodes[i * m_Height + j]->GetPos().z));
-						}
-						else
-						{
-							m_Nodes[i * m_Height + j]->SetPos(glm::vec3(m_Nodes[i * m_Height + j]->GetPos().x,
-								_pos.y + size.y,
-								m_Nodes[i * m_Height + j]->GetPos().z));
-						}
-						break;
-					case 3:
-						if (m_Nodes[i * m_Height + j]->GetPos().z < _pos.z)
-						{
-							m_Nodes[i * m_Height + j]->SetPos(glm::vec3(m_Nodes[i * m_Height + j]->GetPos().x,
-								m_Nodes[i * m_Height + j]->GetPos().y,
-								_pos.z - size.z));
-						}
-						else
-						{
-							m_Nodes[i * m_Height + j]->SetPos(glm::vec3(m_Nodes[i * m_Height + j]->GetPos().x,
-								m_Nodes[i * m_Height + j]->GetPos().y,
-								_pos.z + size.z));
-						}
-						break;
-					default:
-						break;
 					}
 				}
 			}
 		}
 		break;
 	case CollisionType::SPHERE:
-		radius = _scale.x + 0.05f;
+		radius = _scale.x + collisionBonus;
 		for (int i = 0; i < m_Width; i++)
 		{
 			for (int j = 0; j < m_Height; j++)
 			{
-				if (m_Nodes[i * m_Height + j] != nullptr)
+				if (m_Nodes[i * m_Height + j] != nullptr && !m_Nodes[i * m_Height + j]->GetStatic())
 				{
 					float distance = glm::distance(_pos, m_Nodes[i * m_Height + j]->GetPos());
 					if (distance <= (radius))
@@ -386,7 +391,7 @@ void Cloth::CalculateCollision(CollisionType _type, glm::vec3 _pos, glm::vec3 _s
 		{
 			for (int j = 0; j < m_Height; j++)
 			{
-				if (m_Nodes[i * m_Height + j] != nullptr)
+				if (m_Nodes[i * m_Height + j] != nullptr && !m_Nodes[i * m_Height + j]->GetStatic())
 				{
 					float distance = glm::distance(_pos, m_Nodes[i * m_Height + j]->GetPos());
 					if (distance != 0)
@@ -402,12 +407,12 @@ void Cloth::CalculateCollision(CollisionType _type, glm::vec3 _pos, glm::vec3 _s
 		}
 		break;
 	case CollisionType::PYRAMID:
-		size = _scale + 0.05f;
+		size = _scale + collisionBonus;
 		for (int i = 0; i < m_Width; i++)
 		{
 			for (int j = 0; j < m_Height; j++)
 			{
-				if (m_Nodes[i * m_Height + j] != nullptr)
+				if (m_Nodes[i * m_Height + j] != nullptr && !m_Nodes[i * m_Height + j]->GetStatic())
 				{
 					CUtilities::PlaneInfo plane[5];
 					for (int k = 0; k < 4; k++)
@@ -447,6 +452,44 @@ void Cloth::CalculateCollision(CollisionType _type, glm::vec3 _pos, glm::vec3 _s
 						}
 						m_Nodes[i * m_Height + j]->SetPos(m_Nodes[i * m_Height + j]->GetPos() + plane[closestSide].normal * (closestDistance));
 
+					}
+				}
+			}
+		}
+		break;
+	case CollisionType::CAPSULE:
+		radius = _scale.x + collisionBonus;
+		height = _scale.y;
+		//_pos += glm::vec3(0, 1, 0) * 2.0f;
+		for (int i = 0; i < m_Width; i++)
+		{
+			for (int j = 0; j < m_Height; j++)
+			{
+				if (m_Nodes[i * m_Height + j] != nullptr && !m_Nodes[i * m_Height + j]->GetStatic())
+				{
+					glm::vec3 capsuleEnd[2];
+					capsuleEnd[0] = _pos - (glm::vec3(0, 1, 0) * height * 0.5f);
+					capsuleEnd[1] = _pos + (glm::vec3(0, 1, 0) * height * 0.5f);
+
+					float endDist = glm::distance(capsuleEnd[0], capsuleEnd[1]);
+
+					glm::vec3 point = m_Nodes[i * m_Height + j]->GetPos();
+					float s = ((point.x - capsuleEnd[0].x) * (capsuleEnd[1].x - capsuleEnd[0].x) +
+						(point.y - capsuleEnd[0].y) * (capsuleEnd[1].y - capsuleEnd[0].y) +
+						(point.z - capsuleEnd[0].z) * (capsuleEnd[1].z - capsuleEnd[0].z)) / (height * 0.5f);
+
+
+					s = glm::clamp(s, 0.0f, 1.0f);
+
+					glm::vec3 p = glm::vec3(capsuleEnd[0].x + s * (capsuleEnd[1].x - capsuleEnd[0].x),
+						capsuleEnd[0].y + s * (capsuleEnd[1].y - capsuleEnd[0].y),
+						capsuleEnd[0].z + s * (capsuleEnd[1].z - capsuleEnd[0].z));
+
+					float distance = glm::distance(point, p);
+					if (distance <= (radius))
+					{
+						glm::vec3 direction = glm::normalize(point - p);
+						m_Nodes[i * m_Height + j]->SetPos(p + direction * radius);
 					}
 				}
 			}

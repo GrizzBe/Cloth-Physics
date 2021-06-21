@@ -96,7 +96,7 @@ void CCamera::Process(float _x, float _y, float _z)
 		float CamX = sin(CurrentOffset) * Radius;
 		float CamZ = cos(CurrentOffset) * Radius;
 
-		CameraPos = glm::vec3(CamX, 3.5f, CamZ);
+		CameraPos = glm::vec3(CamX, 3.0f, CamZ);
 		ViewMat = glm::lookAt(CameraPos + CameraLookDir, CameraLookDir, CameraUpDir);
 
 	}
@@ -111,7 +111,7 @@ void CCamera::Process(float _x, float _y, float _z)
 		float CamX = sin(CurrentTime * 0.1f) * Radius;
 		float CamZ = cos(CurrentTime * 0.1f) * Radius;
 
-		CameraPos = glm::vec3(CamX, 1.5f, CamZ);
+		CameraPos = glm::vec3(CamX, 0.0f, CamZ);
 		ViewMat = glm::lookAt(CameraPos + CameraLookDir, CameraLookDir, CameraUpDir);
 	}
 	UpdateMousePicking();

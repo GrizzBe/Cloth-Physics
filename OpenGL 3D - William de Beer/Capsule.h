@@ -7,9 +7,9 @@
 // 
 //  (c) 2021 Media Design School 
 // 
-//  File Name   :   Sphere.h
-//  Description :   Sphere object.
-//  Author      :   William de Beer, Callan Moore 
+//  File Name   :   Capsule.h
+//  Description :   Capsule object.
+//  Author      :   William de Beer
 //  Mail        :   William.Beer@mds.ac.nz
 // 
  // Library Includes 
@@ -26,14 +26,15 @@
 #include "Camera.h"
 #include "Object.h"
  // Implementation 
-class Sphere : public CObject
+class Capsule : public CObject
 {
 public:
-	Sphere();
-	virtual ~Sphere();
+	Capsule();
+	virtual ~Capsule();
 
 	virtual void Render(GLuint _program, CCamera* _cam);
 	virtual void Update(float _dT);
 
 };
+
 

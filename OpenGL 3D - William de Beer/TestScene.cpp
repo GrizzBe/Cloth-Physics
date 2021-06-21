@@ -38,9 +38,11 @@ CTestScene::CTestScene()
 	m_HeightSlider = 0;
 	m_WidthSlider = 0;
 	m_HookSlider = 0;
+	m_fUpdateRate = 0;
 
 	m_bUseWireframe = false;
 	m_bActiveFan = false;
+	m_bClothUntangle = false;
 }
 
 CTestScene::~CTestScene()
@@ -60,6 +62,26 @@ CTestScene::~CTestScene()
 		delete m_Cam;
 		m_Cam = 0;
 	}
+	if (m_Fan != nullptr)
+	{
+		delete m_Fan;
+		m_Fan = 0;
+	}
+	if (m_Pyramid != nullptr)
+	{
+		delete m_Pyramid;
+		m_Pyramid = 0;
+	}
+	if (m_Capsule != nullptr)
+	{
+		delete m_Capsule;
+		m_Capsule = 0;
+	}
+	if (m_Sphere != nullptr)
+	{
+		delete m_Sphere;
+		m_Sphere = 0;
+	}
 	if (m_HeightSlider != nullptr)
 	{
 		delete m_HeightSlider;
@@ -74,6 +96,11 @@ CTestScene::~CTestScene()
 	{
 		delete m_HookSlider;
 		m_HookSlider = 0;
+	}
+	if (m_txtUpdateRate != nullptr)
+	{
+		delete m_txtUpdateRate;
+		m_txtUpdateRate = 0;
 	}
 	CLightManager::RemoveInstance();
 }
@@ -108,30 +135,42 @@ void CTestScene::Initialise()
 
 	// Create fan
 	m_Fan = new Cube();
-	m_Fan->SetPosition(glm::vec3(0.0f, -5.1, -5.0f));
+	m_Fan->SetPosition(glm::vec3(0.0f, 0.0f, -5.0f));
 	m_Fan->SetScale(glm::vec3(1.0f , 1.0f , 1.0f));
 	m_Fan->SetTexture("Fan.png");
 
 	// Create sphere
 	m_Sphere = new Sphere();
-	m_Sphere->SetPosition(glm::vec3(3.0f, -5.1, -5.0f));
+	m_Sphere->SetPosition(glm::vec3(3.0f, 0.0f, -5.0f));
 	m_Sphere->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
 	m_Sphere->SetTexture("Map/earth.jpg");
 
+	// Create capsule
+	m_Capsule = new Capsule();
+	m_Capsule->SetPosition(glm::vec3(6.0f, 0.0f, -5.0f));
+	m_Capsule->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
+	m_Capsule->SetTexture("Capsule.png");
+
 	// Create pyramid
 	m_Pyramid = new Pyramid();
-	m_Pyramid->SetPosition(glm::vec3(-3.0f, -5.1, -5.0f));
+	m_Pyramid->SetPosition(glm::vec3(-3.0f, 0.0f, -5.0f));
 	m_Pyramid->SetScale(glm::vec3(2.0f, 2.0f, 2.0f));
 	m_Pyramid->SetTexture("Pyramid.png");
 
 	// Create ground
 	m_Ground = new Quad();
-	m_Ground->SetPosition(glm::vec3(0, -10.1, 0));
+	m_Ground->SetPosition(glm::vec3(0, -5.1, 0));
 	m_Ground->SetScale(glm::vec3(20, 1, 20));
 	m_Ground->SetReflectivity(1.0f);
 	m_Ground->SetTexture("Map/Ground.jpg");
 
-	
+	std::string font = "Resources/Fonts/VERDANA.TTF";
+	std::string text = std::to_string(m_fUpdateRate);
+
+	glm::vec2 textPosition = glm::vec2(0.0f, CUtilities::GetInstance().GetResolution().y - 26.0f);
+	m_txtUpdateRate = new CText(text, font, glm::vec2(24.0f, 24.0f), textPosition, glm::vec3(0.0f, 255.0f, 0.0f), glm::vec2(1.0f, 1.0f));
+
+
 	// Create light
 	CLightSource* newLight = new CLightSource(glm::vec3(0.0f, 0.0f, 5.0f));
 	newLight->SetColor(glm::vec3(1.0f, 0.9f, 0.9f));
@@ -156,11 +195,13 @@ void CTestScene::Render()
 	m_Fan->Render(Program_Object, m_Cam);
 	m_Sphere->Render(Program_Object, m_Cam);
 	m_Pyramid->Render(Program_Object, m_Cam);
+	m_Capsule->Render(Program_Object, m_Cam);
 
 	glDisable(GL_DEPTH_TEST);
 	m_HeightSlider->Render(Program_UI, m_Cam);
 	m_WidthSlider->Render(Program_UI, m_Cam);
 	m_HookSlider->Render(Program_UI, m_Cam);
+	m_txtUpdateRate->Render();
 	glEnable(GL_DEPTH_TEST);
 	//*******//
 	glUseProgram(0);
@@ -177,11 +218,21 @@ void CTestScene::Update()
 	// Get delta time
 	m_fCurrentTime = (float)glutGet(GLUT_ELAPSED_TIME);
 	m_fDeltaTime = (m_fCurrentTime - m_fPreviousTimeStamp) * 0.001f;
-	if (m_fDeltaTime < 0.016)
+
+	float timeStep;
+	if (m_bClothUntangle)
+		timeStep = 0.0333f;
+	else
+		timeStep = 0.0167f;
+
+	if (m_fDeltaTime < timeStep)
 	{
 		return;
 	}
-	m_fDeltaTime = 0.016;
+
+	m_txtUpdateRate->SetText("Update Rate: " + std::to_string((int)(1.0f / m_fDeltaTime)));
+
+	m_fDeltaTime = timeStep;
 
 	m_fPreviousTimeStamp = m_fCurrentTime;
 
@@ -196,14 +247,17 @@ void CTestScene::Update()
 	case ControlledObject::PYRAMID:
 		ApplyMovement(m_Pyramid);
 		break;
+	case ControlledObject::CAPSULE:
+		ApplyMovement(m_Capsule);
+		break;
 	default:
 		break;
 	}
-	//m_Fan->SetPosition(m_Fan->GetPosition() + m_Move * m_fDeltaTime);
 
 	m_Fan->Update(m_fDeltaTime);
 	m_Sphere->Update(m_fDeltaTime);
 	m_Pyramid->Update(m_fDeltaTime);
+	m_Capsule->Update(m_fDeltaTime);
 
 	if (m_bActiveFan)
 	{
@@ -213,8 +267,10 @@ void CTestScene::Update()
 	m_Cloth->CalculateCollision(CollisionType::SPHERE, m_Sphere->GetPosition(), m_Sphere->GetScale());
 	m_Cloth->CalculateCollision(CollisionType::CUBE, m_Fan->GetPosition(), m_Fan->GetScale());
 	m_Cloth->CalculateCollision(CollisionType::PYRAMID, m_Pyramid->GetPosition(), m_Pyramid->GetScale());
+	m_Cloth->CalculateCollision(CollisionType::CAPSULE, m_Capsule->GetPosition(), m_Capsule->GetScale());
 
-	//m_Cloth->Untangle();
+	if (m_bClothUntangle)
+		m_Cloth->Untangle();
 
 	m_Cloth->Update(m_fDeltaTime, m_Cam);
 	m_Cam->Process(0.0f, 0.0f, 0.0f);
@@ -230,7 +286,7 @@ void CTestScene::Update()
 }
 
 /***********************
-* ProcessInput: It doesn't do much really.
+* ProcessInput: Processes inputs.
 * @author: William de Beer
 ********************/
 void CTestScene::ProcessInput()
@@ -262,11 +318,17 @@ void CTestScene::ProcessInput()
 		CInputHandle::GetInstance().UpdateKeyboardState('2', InputState::Input_Down, 0, 0);
 		object = ControlledObject::SPHERE;
 	}
-	// Set fan to be controlled
+	// Set pyramid to be controlled
 	if (CInputHandle::GetInstance().GetKeyboardState('3') == InputState::Input_DownFirst)
 	{
 		CInputHandle::GetInstance().UpdateKeyboardState('3', InputState::Input_Down, 0, 0);
 		object = ControlledObject::PYRAMID;
+	}
+	// Set capsule to be controlled
+	if (CInputHandle::GetInstance().GetKeyboardState('4') == InputState::Input_DownFirst)
+	{
+		CInputHandle::GetInstance().UpdateKeyboardState('4', InputState::Input_Down, 0, 0);
+		object = ControlledObject::CAPSULE;
 	}
 
 	// Drop cloth
@@ -276,11 +338,18 @@ void CTestScene::ProcessInput()
 		m_Cloth->DropCloth();
 	}
 
-	// Drop cloth
+	// Toggle fan
 	if (CInputHandle::GetInstance().GetKeyboardState('f') == InputState::Input_DownFirst)
 	{
 		CInputHandle::GetInstance().UpdateKeyboardState('f', InputState::Input_Down, 0, 0);
 		m_bActiveFan = !m_bActiveFan;
+	}
+
+	// Toggle cloth untangle
+	if (CInputHandle::GetInstance().GetKeyboardState('u') == InputState::Input_DownFirst)
+	{
+		CInputHandle::GetInstance().UpdateKeyboardState('u', InputState::Input_Down, 0, 0);
+		m_bClothUntangle = !m_bClothUntangle;
 	}
 
 	Move();

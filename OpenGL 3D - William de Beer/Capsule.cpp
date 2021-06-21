@@ -6,8 +6,8 @@
 // 
 //  (c) 2021 Media Design School 
 // 
-//  File Name   :   Sphere.cpp
-//  Description :   Sphere object.
+//  File Name   :   Capsule.cpp
+//  Description :   Capsule object.
 //  Author      :   William de Beer, Callan Moore 
 //  Mail        :   William.Beer@mds.ac.nz
 // 
@@ -15,9 +15,9 @@
 #include "ShaderLoader.h"
 #include "LightManager.h"
  // This Include 
-#include "Sphere.h"
+#include "Capsule.h"
  // Implementation 
-Sphere::Sphere()
+Capsule::Capsule()
 {
 	float radius = 1.0f;
 
@@ -41,14 +41,20 @@ Sphere::Sphere()
 			float y = cosf((float)theta);
 			float z = sinf((float)phi) * sinf((float)theta);
 
+			if (y < 0)
+				y -= 0.5f;
+			else
+				y += 0.5f;
+
+
 			vertices[offset++] = x * radius;
 			vertices[offset++] = y * radius;
 			vertices[offset++] = z * radius;
-						   
+
 			vertices[offset++] = x;
 			vertices[offset++] = y;
 			vertices[offset++] = z;
-						   
+
 			vertices[offset++] = (float)i / (sections - 1);
 			vertices[offset++] = (float)j / (sections - 1);
 
@@ -118,16 +124,16 @@ Sphere::Sphere()
 	indices = 0;
 }
 
-Sphere::~Sphere()
+Capsule::~Capsule()
 {
 }
 
 /***********************
-* Render: Renders sphere
+* Render: Renders Capsule
 * @author: William de Beer
-* @parameter: Program to use, pointer to camera 
+* @parameter: Program to use, pointer to camera
 ********************/
-void Sphere::Render(GLuint _program, CCamera* _cam)
+void Capsule::Render(GLuint _program, CCamera* _cam)
 {
 	glUseProgram(_program);
 
@@ -154,14 +160,42 @@ void Sphere::Render(GLuint _program, CCamera* _cam)
 	glDrawElements(DrawType, IndiceCount, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 	glUseProgram(0);
+
+
+	glBegin(GL_LINES);
+	glm::vec3 capsuleEnd[2];
+	capsuleEnd[0] = ObjPosition - glm::vec3(0, 1, 0) * 0.5f;
+	capsuleEnd[1] = ObjPosition + glm::vec3(0, 1, 0) * 0.5f;
+
+	glColor3f(0, 1, 0);
+
+	glm::vec4 pos3D = _cam->GetPVMatrix() * glm::vec4(capsuleEnd[0], 1.0f);
+	glm::vec3 position = glm::vec3(pos3D.x, pos3D.y, pos3D.z) / pos3D.w;
+
+	glDisable(GL_DEPTH_TEST);
+	// Vertex 1
+	glVertex3f(position.x,
+		position.y,
+		position.z);
+
+
+	pos3D = _cam->GetPVMatrix() * glm::vec4(capsuleEnd[1], 1.0f);
+	position = glm::vec3(pos3D.x, pos3D.y, pos3D.z) / pos3D.w;
+
+	// Vertex 2
+	glVertex3f(position.x,
+		position.y,
+		position.z);
+	glEnd();
+	glEnable(GL_DEPTH_TEST);
 }
 
 /***********************
-* Update: Updates Sphere
+* Update: Updates Capsule
 * @author: William de Beer
 * @parameter: Delta time
 ********************/
-void Sphere::Update(float _dT)
+void Capsule::Update(float _dT)
 {
 	CObject::Update(_dT);
 }

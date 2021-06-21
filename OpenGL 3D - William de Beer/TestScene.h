@@ -17,6 +17,7 @@
 #include "AudioManager.h"
 #include "Button.h"
 #include "Camera.h"
+#include "Capsule.h"
 #include "Cloth.h"
 #include "Cube.h"
 #include "CubeMap.h"
@@ -51,6 +52,7 @@ private:
 		FAN,
 		SPHERE,
 		PYRAMID,
+		CAPSULE,
 	};
 
 
@@ -60,6 +62,7 @@ private:
 
 	bool m_bUseWireframe;
 	bool m_bActiveFan;
+	bool m_bClothUntangle;
 
 	GLuint Program_UIAnim;
 	GLuint Program_UI;
@@ -72,6 +75,7 @@ private:
 	ControlledObject object;
 
 	Cloth* m_Cloth;
+	Capsule* m_Capsule;
 	CCamera* m_Cam;
 	Quad* m_Ground;
 	Cube* m_Fan;
@@ -81,6 +85,9 @@ private:
 	Slider* m_HeightSlider;
 	Slider* m_WidthSlider;
 	Slider* m_HookSlider;
+
+	CText* m_txtUpdateRate;
+	float m_fUpdateRate;
 };
 
 #endif
