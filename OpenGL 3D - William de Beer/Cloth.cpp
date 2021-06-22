@@ -16,23 +16,30 @@ Cloth::Cloth(int _width, int _height)
 
 	m_Nodes = new ClothNode * [m_Width * m_Height];
 
-	for (int i = 0; i < m_Width; i++)
+	for (int j = 0; j < m_Height; j++)
 	{
-		for (int j = 0; j < m_Height; j++)
+		for (int i = 0; i < m_Width; i++)
 		{
+			// Get UV coords
 			glm::vec2 uv((i + 1) / (float)m_Width, (j + 1) / (float)m_Height);
+			// Create node
 			m_Nodes[i * m_Height + j] = new ClothNode(glm::vec3(i * m_Spacing - (m_Spacing * m_Width - 0.5f) / 2.0f, 2.0f + -j * m_Spacing, 0), uv);
-			if (j == 0 && i % CUtilities::GetInstance().GetHookDensity() == 0)
+			if (j == 0 && i % CUtilities::GetInstance().GetHookDensity() == 0) // Set node to be hook/ring
 			{
 				m_Nodes[i * m_Height + j]->SetStatic(true);
 				m_vRings.push_back(m_Nodes[i * m_Height + j]);
 			}
+			if (i == m_Width - 1 && j == m_Height - 1) // Slightly offset one node for not terrible physics
+			{
+				m_Nodes[i * m_Height + j]->SetPos(m_Nodes[i * m_Height + j]->GetPos() + glm::vec3(0.05, 0, 0.05));
+			}
 		}
 	}
 
-	for (int i = 0; i < m_Width; i++)
+	// Set connections
+	for (int j = 0; j < m_Height; j++)
 	{
-		for (int j = 0; j < m_Height; j++)
+		for (int i = 0; i < m_Width; i++)
 		{
 			if (j - 1 >= 0)
 				m_Nodes[i * m_Height + j]->SetConnection(Side::TOP, m_Nodes[i * m_Height + (j - 1)]);
@@ -111,27 +118,19 @@ void Cloth::Render(CCamera* _camera)
 		}
 	}
 	glEnd();
-
 }
 
 void Cloth::Update(float _dT, CCamera* _camera)
-{/*
-	float CurrentMousePosX = CInputHandle::GetInstance().GetMouseX();
-	float DeltaMousePosX = PrevMousePosX - CurrentMousePosX;
-	PrevMousePosX = CurrentMousePosX;
-
-	float CurrentMousePosY = CInputHandle::GetInstance().GetMouseY();
-	float DeltaMousePosY = PrevMousePosY - CurrentMousePosY;
-	PrevMousePosY = CurrentMousePosY;*/
-
+{
 	if (CInputHandle::GetInstance().GetMouseButtonState(GLUT_LEFT_BUTTON) == InputState::Input_Down)
 	{
 		bool endLoop = false;
 
 		// Apply external force
-		for (int i = 0; i < m_Width; i++)
+		
+		for (int j = 0; j < m_Height; j++)
 		{
-			for (int j = 0; j < m_Height; j++)
+			for (int i = 0; i < m_Width; i++)
 			{
 				if (m_Nodes[i * m_Height + j] != nullptr)
 				{
@@ -224,9 +223,9 @@ void Cloth::Update(float _dT, CCamera* _camera)
 		}
 	}
 
-	for (int i = 0; i < m_Width; i++)
+	for (int j = 0; j < m_Height; j++)
 	{
-		for (int j = 0; j < m_Height; j++)
+		for (int i = 0; i < m_Width; i++)
 		{
 			if (m_Nodes[i * m_Height + j] != nullptr)
 			{
@@ -274,9 +273,9 @@ void Cloth::CalculateCollision(CollisionType _type, glm::vec3 _pos, glm::vec3 _s
 	{
 	case CollisionType::CUBE:
 		size = (_scale / 2.0f) + collisionBonus;
-		for (int i = 0; i < m_Width; i++)
+		for (int j = 0; j < m_Height; j++)
 		{
-			for (int j = 0; j < m_Height; j++)
+			for (int i = 0; i < m_Width; i++)
 			{
 				if (m_Nodes[i * m_Height + j] != nullptr && !m_Nodes[i * m_Height + j]->GetStatic())
 				{
@@ -369,9 +368,9 @@ void Cloth::CalculateCollision(CollisionType _type, glm::vec3 _pos, glm::vec3 _s
 		break;
 	case CollisionType::SPHERE:
 		radius = _scale.x + collisionBonus;
-		for (int i = 0; i < m_Width; i++)
+		for (int j = 0; j < m_Height; j++)
 		{
-			for (int j = 0; j < m_Height; j++)
+			for (int i = 0; i < m_Width; i++)
 			{
 				if (m_Nodes[i * m_Height + j] != nullptr && !m_Nodes[i * m_Height + j]->GetStatic())
 				{
@@ -387,9 +386,9 @@ void Cloth::CalculateCollision(CollisionType _type, glm::vec3 _pos, glm::vec3 _s
 		break;
 	case CollisionType::CLOTHNODE:
 		radius = _scale.x;
-		for (int i = 0; i < m_Width; i++)
+		for (int j = 0; j < m_Height; j++)
 		{
-			for (int j = 0; j < m_Height; j++)
+			for (int i = 0; i < m_Width; i++)
 			{
 				if (m_Nodes[i * m_Height + j] != nullptr && !m_Nodes[i * m_Height + j]->GetStatic())
 				{
@@ -408,9 +407,9 @@ void Cloth::CalculateCollision(CollisionType _type, glm::vec3 _pos, glm::vec3 _s
 		break;
 	case CollisionType::PYRAMID:
 		size = _scale + collisionBonus;
-		for (int i = 0; i < m_Width; i++)
+		for (int j = 0; j < m_Height; j++)
 		{
-			for (int j = 0; j < m_Height; j++)
+			for (int i = 0; i < m_Width; i++)
 			{
 				if (m_Nodes[i * m_Height + j] != nullptr && !m_Nodes[i * m_Height + j]->GetStatic())
 				{
@@ -461,9 +460,9 @@ void Cloth::CalculateCollision(CollisionType _type, glm::vec3 _pos, glm::vec3 _s
 		radius = _scale.x + collisionBonus;
 		height = _scale.y;
 		//_pos += glm::vec3(0, 1, 0) * 2.0f;
-		for (int i = 0; i < m_Width; i++)
+		for (int j = 0; j < m_Height; j++)
 		{
-			for (int j = 0; j < m_Height; j++)
+			for (int i = 0; i < m_Width; i++)
 			{
 				if (m_Nodes[i * m_Height + j] != nullptr && !m_Nodes[i * m_Height + j]->GetStatic())
 				{
@@ -474,16 +473,12 @@ void Cloth::CalculateCollision(CollisionType _type, glm::vec3 _pos, glm::vec3 _s
 					float endDist = glm::distance(capsuleEnd[0], capsuleEnd[1]);
 
 					glm::vec3 point = m_Nodes[i * m_Height + j]->GetPos();
-					float s = ((point.x - capsuleEnd[0].x) * (capsuleEnd[1].x - capsuleEnd[0].x) +
-						(point.y - capsuleEnd[0].y) * (capsuleEnd[1].y - capsuleEnd[0].y) +
-						(point.z - capsuleEnd[0].z) * (capsuleEnd[1].z - capsuleEnd[0].z)) / (height * 0.5f);
-
+					
+					float s = glm::dot(capsuleEnd[1] - capsuleEnd[0], point - capsuleEnd[0]) / (height * 0.5f);
 
 					s = glm::clamp(s, 0.0f, 1.0f);
 
-					glm::vec3 p = glm::vec3(capsuleEnd[0].x + s * (capsuleEnd[1].x - capsuleEnd[0].x),
-						capsuleEnd[0].y + s * (capsuleEnd[1].y - capsuleEnd[0].y),
-						capsuleEnd[0].z + s * (capsuleEnd[1].z - capsuleEnd[0].z));
+					glm::vec3 p = capsuleEnd[0] + s * (capsuleEnd[1] - capsuleEnd[0]);
 
 					float distance = glm::distance(point, p);
 					if (distance <= (radius))
@@ -502,13 +497,13 @@ void Cloth::CalculateCollision(CollisionType _type, glm::vec3 _pos, glm::vec3 _s
 
 void Cloth::Untangle()
 {
-	for (int i = 0; i < m_Width; i++)
+	for (int j = 0; j < m_Height; j++)
 	{
-		for (int j = 0; j < m_Height; j++)
+		for (int i = 0; i < m_Width; i++)
 		{
 			if (m_Nodes[i * m_Height + j] != nullptr)
 			{
-				CalculateCollision(CollisionType::CLOTHNODE, m_Nodes[i * m_Height + j]->GetPos(), glm::vec3(1.0f, 1.0f, 1.0f) * m_Spacing * 0.9f);
+				CalculateCollision(CollisionType::CLOTHNODE, m_Nodes[i * m_Height + j]->GetPos(), glm::vec3(1.0f, 1.0f, 1.0f) * m_Spacing * 0.8f);
 			}
 		}
 	}
@@ -516,9 +511,9 @@ void Cloth::Untangle()
 
 void Cloth::ApplyWind(glm::vec3 _windOrigin)
 {
-	for (int i = 0; i < m_Width; i++)
+	for (int j = 0; j < m_Height; j++)
 	{
-		for (int j = 0; j < m_Height; j++)
+		for (int i = 0; i < m_Width; i++)
 		{
 			if (m_Nodes[i * m_Height + j] != nullptr)
 			{
