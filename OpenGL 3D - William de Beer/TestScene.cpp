@@ -221,16 +221,16 @@ void CTestScene::Update()
 
 	float timeStep;
 	if (m_bClothUntangle)
-		timeStep = 0.0333f;
+		timeStep = 0.033f;
 	else
-		timeStep = 0.0167f;
+		timeStep = 0.033f;
 
 	if (m_fDeltaTime < timeStep)
 	{
 		return;
 	}
 
-	m_txtUpdateRate->SetText("Update Rate: " + std::to_string((int)(1.0f / m_fDeltaTime)));
+	m_txtUpdateRate->SetText("Update Rate: " + std::to_string((int)std::ceilf((1.0f / m_fDeltaTime))));
 
 	m_fDeltaTime = timeStep;
 
