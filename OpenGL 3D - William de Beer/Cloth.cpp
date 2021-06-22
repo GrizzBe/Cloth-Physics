@@ -503,7 +503,7 @@ void Cloth::Untangle()
 		{
 			if (m_Nodes[i * m_Height + j] != nullptr)
 			{
-				CalculateCollision(CollisionType::CLOTHNODE, m_Nodes[i * m_Height + j]->GetPos(), glm::vec3(1.0f, 1.0f, 1.0f) * m_Spacing * 0.8f);
+				CalculateCollision(CollisionType::CLOTHNODE, m_Nodes[i * m_Height + j]->GetPos(), glm::vec3(1.0f, 1.0f, 1.0f) * m_Spacing * 0.9f);
 			}
 		}
 	}

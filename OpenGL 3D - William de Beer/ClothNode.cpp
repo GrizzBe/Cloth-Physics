@@ -39,10 +39,11 @@ void ClothNode::Update(float _dT)
         m_Acceleration = glm::vec3(0, 0, 0);
         return;
     }
+    
     float magAcceleration = glm::distance(glm::vec3(0, 0, 0), m_Acceleration);
-    if (magAcceleration > 10.0f)
+    if (magAcceleration > m_MaxAcceleration)
     {
-        m_Acceleration = glm::normalize(m_Acceleration) * 10.0f;
+        m_Acceleration = glm::normalize(m_Acceleration) * m_MaxAcceleration;
     }
 
     // Get velocity
@@ -55,6 +56,7 @@ void ClothNode::Update(float _dT)
 
     // Apply damping
     m_Acceleration -= m_Acceleration * _dT * m_Damping / m_Mass;
+    //m_Acceleration -= velocity * m_Damping / m_Mass;
 
 
     // Apply physics to position
@@ -62,8 +64,8 @@ void ClothNode::Update(float _dT)
     m_PreviousPos = m_Position;
 
     // Floor
-    if (newPos.y < -10.0f)
-        newPos.y = -10.0f;
+    if (newPos.y < -5.0f)
+        newPos.y = -5.0f;
     if (newPos.x < -10.0f)
         newPos.x = -10.0f;
     if (newPos.x > 10.0f)
@@ -92,10 +94,10 @@ void ClothNode::ApplyConstraint(ClothNode* _other, float _spacing)
 
     glm::vec3 delta = m_Position - _other->GetPos();
     float deltaLength = glm::distance(m_Position, _other->GetPos());
-    /*if (deltaLength > _spacing * m_BreakingDistance)
+    if (deltaLength > _spacing * m_BreakingDistance)
     {
         m_ToBeDestroyed = true;
-    }*/
+    }
 
     float difference = ((_spacing * m_RestingDistance) - deltaLength) / deltaLength;
 

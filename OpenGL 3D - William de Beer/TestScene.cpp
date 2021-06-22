@@ -125,7 +125,6 @@ void CTestScene::Initialise()
 	// Create hook slider
 	m_HookSlider = new Slider(glm::vec2(-0.95f, -0.9f), glm::vec2(0.02f, 0.02f), 1, 25, CUtilities::GetInstance().GetHookDensity(), "Hook Density");
 
-
 	// Create cloth
 	m_Cloth = new Cloth(CUtilities::GetInstance().GetClothSize().x, CUtilities::GetInstance().GetClothSize().y);
 
@@ -221,16 +220,17 @@ void CTestScene::Update()
 
 	float timeStep;
 	if (m_bClothUntangle)
-		timeStep = 0.033f;
+		timeStep = 1.0f / 30.0f;
 	else
-		timeStep = 0.033f;
+		timeStep = 1.0f / 60.0f;
 
+	//timeStep = 0.0167f;
 	if (m_fDeltaTime < timeStep)
 	{
 		return;
 	}
 
-	m_txtUpdateRate->SetText("Update Rate: " + std::to_string((int)std::ceilf((1.0f / m_fDeltaTime))));
+	m_txtUpdateRate->SetText("Update Rate: " + std::to_string((int)std::ceilf(1.0f / m_fDeltaTime)));
 
 	m_fDeltaTime = timeStep;
 
