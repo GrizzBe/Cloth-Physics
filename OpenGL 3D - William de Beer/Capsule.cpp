@@ -43,7 +43,7 @@ Capsule::Capsule()
 
 			if (y < 0)
 				y -= 0.5f;
-			else
+			else if (y > 0)
 				y += 0.5f;
 
 

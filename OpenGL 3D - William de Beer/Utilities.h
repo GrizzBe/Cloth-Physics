@@ -33,7 +33,6 @@ public:
 
 	static float PlanePointValue(glm::vec3 _normal, glm::vec3 _planePosition, glm::vec3 _pointPosition);
 	static bool PlanePointCollision(glm::vec3 _normal, glm::vec3 _planePosition, glm::vec3 _pointPosition);
-	static float DotProduct(glm::vec3 _LHS, glm::vec3 _RHS);
 
 	glm::vec2 GetResolution();
 	float GetScreenRatio();

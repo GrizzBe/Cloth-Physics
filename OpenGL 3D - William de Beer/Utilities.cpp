@@ -20,8 +20,8 @@ CUtilities::CUtilities()
 {
 	m_vResolution = glm::vec2( 1200.0f , 800.0f );
 	m_fScreenRatio = m_vResolution.x / m_vResolution.y;
-	ClothSize = glm::vec2(19, 19);
-	HookNo = 8;
+	ClothSize = glm::vec2(17, 17);
+	HookNo = 4;
 }
 
 CUtilities::~CUtilities()
@@ -49,8 +49,8 @@ void CUtilities::RemoveInstance()
 
 float CUtilities::PlanePointValue(glm::vec3 _normal, glm::vec3 _planePosition, glm::vec3 _pointPosition)
 {
-	float distance = DotProduct(_normal, _planePosition);
-	float val = DotProduct(_normal, _pointPosition) - distance;
+	float distance = glm::dot(_normal, _planePosition);
+	float val = glm::dot(_normal, _pointPosition) - distance;
 	return val;
 }
 
@@ -65,12 +65,6 @@ bool CUtilities::PlanePointCollision(glm::vec3 _normal, glm::vec3 _planePosition
 	{
 		return true;
 	}
-}
-
-float CUtilities::DotProduct(glm::vec3 _LHS, glm::vec3 _RHS)
-{
-	float result = (_LHS.x * _RHS.x) + (_LHS.y * _RHS.y) + (_LHS.z * _RHS.z);
-	return result;
 }
 
 glm::vec2 CUtilities::GetResolution()
