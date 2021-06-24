@@ -62,6 +62,7 @@ private:
 
 	bool m_bUseWireframe;
 	bool m_bActiveFan;
+	bool m_bFanVisuals;
 	bool m_bClothUntangle;
 
 	GLuint Program_UIAnim;
@@ -79,12 +80,17 @@ private:
 	CCamera* m_Cam;
 	Quad* m_Ground;
 	Cube* m_Fan;
+	Cube* m_FanVisuals;
 	Pyramid* m_Pyramid;
 	Sphere* m_Sphere;
 
 	Slider* m_HeightSlider;
 	Slider* m_WidthSlider;
+	Slider* m_WindAreaSlider;
 	Slider* m_HookSlider;
+	Slider* m_WindSlider;
+
+	std::vector<CText*> m_txtInstructions;
 
 	CText* m_txtUpdateRate;
 	float m_fUpdateRate;

@@ -92,14 +92,16 @@ void CInputHandle::UpdateKeyboardState(int Key, InputState State, int X, int Y)
 ********************/
 void CInputHandle::UpdateMouseState(int Button, InputState State, int X, int Y)
 {
-	if (State == InputState::Input_Down && (MouseState[Button] != InputState::Input_Down))
+	/*if (State == InputState::Input_Down && (MouseState[Button] != InputState::Input_Down))
 	{
 		MouseState[Button] = InputState::Input_DownFirst;
+		return;
 	}
 	if (State == InputState::Input_Up && (MouseState[Button] != InputState::Input_Up))
 	{
 		MouseState[Button] = InputState::Input_UpFirst;
-	}
+		return;
+	}*/
 
 	MouseState[Button] = State;
 }

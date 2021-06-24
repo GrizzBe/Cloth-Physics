@@ -144,7 +144,9 @@ void CCamera::UpdateMousePicking()
 	//eyespace to world space
 	glm::mat4 invViewMat = glm::inverse(GetViewMat());
 	glm::vec4 rayWorld = invViewMat * eyeCoords;
-	RayDirection = glm::normalize(glm::vec3(rayWorld));
+	RayDirection = -glm::normalize(glm::vec3(rayWorld));
+
+	//std::cout << RayDirection.x << ", " << RayDirection.y << ", " << RayDirection.z << std::endl;
 }
 
 /***********************

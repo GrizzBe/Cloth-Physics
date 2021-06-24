@@ -67,8 +67,8 @@ private:
 	float m_Stiffness = 1.5f;
 	float m_RestingDistance = 1.0f;
 	float m_BreakingDistance = 5.0f;
-	float m_MaxSpeed = 10.0f;
-	float m_MaxAcceleration = 10.0f;
+	float m_MaxSpeed = 200.0f;
+	float m_MaxAcceleration = 100.0f;
 	float m_fHeatResistance;
 
 	bool m_ToBeDestroyed;

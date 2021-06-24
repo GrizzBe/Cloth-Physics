@@ -23,7 +23,9 @@ Cloth::Cloth(int _width, int _height)
 			// Get UV coords
 			glm::vec2 uv((i + 1) / (float)m_Width, (j + 1) / (float)m_Height);
 			// Create node
+
 			m_Nodes[i * m_Height + j] = new ClothNode(glm::vec3(i * m_Spacing - (m_Spacing * m_Width - 0.5f) / 2.0f, 2.0f + -j * m_Spacing, 0), uv);
+
 			if (j == 0 && i % CUtilities::GetInstance().GetHookDensity() == 0) // Set node to be hook/ring
 			{
 				m_Nodes[i * m_Height + j]->SetStatic(true);
@@ -122,7 +124,8 @@ void Cloth::Render(CCamera* _camera)
 
 void Cloth::Update(float _dT, CCamera* _camera)
 {
-	if (CInputHandle::GetInstance().GetMouseButtonState(GLUT_LEFT_BUTTON) == InputState::Input_Down)
+	if (CInputHandle::GetInstance().GetMouseButtonState(GLUT_LEFT_BUTTON) == InputState::Input_Down || 
+		CInputHandle::GetInstance().GetMouseButtonState(GLUT_LEFT_BUTTON) == InputState::Input_DownFirst)
 	{
 		bool endLoop = false;
 
@@ -168,7 +171,7 @@ void Cloth::Update(float _dT, CCamera* _camera)
 						}
 						else
 						{
-							glm::vec3 externalForce(_camera->GetRayDirection() * 5000.0f);
+							glm::vec3 externalForce(-_camera->GetRayDirection() * 5000.0f);
 							m_Nodes[i * m_Height + j]->ApplyForce(externalForce);
 						}
 					}
@@ -179,11 +182,13 @@ void Cloth::Update(float _dT, CCamera* _camera)
 		}
 	}
 
+
+
 	if (CInputHandle::GetInstance().GetMouseButtonState(GLUT_LEFT_BUTTON) == InputState::Input_Down && 
 		CInputHandle::GetInstance().GetKeyboardState('g') == InputState::Input_Down && grab.grabbing)
 	{
 		ClothNode* node = m_Nodes[grab.i * m_Height + grab.j];
-		node->SetPos(_camera->GetCamPos() + _camera->GetRayDirection() * grab.distance);
+		node->SetPos(_camera->GetCamPos() - _camera->GetRayDirection() * grab.distance);
 	}
 	if (CInputHandle::GetInstance().GetKeyboardState('g') == InputState::Input_UpFirst || 
 		CInputHandle::GetInstance().GetMouseButtonState(GLUT_LEFT_BUTTON) == InputState::Input_Up)
@@ -279,9 +284,7 @@ void Cloth::CalculateCollision(CollisionType _type, glm::vec3 _pos, glm::vec3 _s
 			{
 				if (m_Nodes[i * m_Height + j] != nullptr && !m_Nodes[i * m_Height + j]->GetStatic())
 				{
-					if ((m_Nodes[i * m_Height + j]->GetPos().x >= (_pos.x - size.x) && m_Nodes[i * m_Height + j]->GetPos().x <= (_pos.x + size.x)) &&
-						(m_Nodes[i * m_Height + j]->GetPos().y >= (_pos.y - size.y) && m_Nodes[i * m_Height + j]->GetPos().y <= (_pos.y + size.y)) &&
-						(m_Nodes[i * m_Height + j]->GetPos().z >= (_pos.z - size.z) && m_Nodes[i * m_Height + j]->GetPos().z <= (_pos.z + size.z)))
+					if (CUtilities::AABB(m_Nodes[i * m_Height + j]->GetPos(), _pos, size))
 					{
 						int closestSide = -1;
 						float furthestDistanceToCenter = 0.0f;
@@ -517,9 +520,13 @@ void Cloth::ApplyWind(glm::vec3 _windOrigin)
 		{
 			if (m_Nodes[i * m_Height + j] != nullptr)
 			{
+				if (!CUtilities::AABB(m_Nodes[i * m_Height + j]->GetPos(), _windOrigin, 
+					glm::vec3(CUtilities::GetInstance().GetWindArea() / 2.0f, CUtilities::GetInstance().GetWindArea() / 2.0f, 50.0f)))
+					continue;
+
 				// Apply gravity
 				glm::vec3 force = m_Nodes[i * m_Height + j]->GetPos() - _windOrigin;
-				m_Nodes[i * m_Height + j]->ApplyForce(glm::normalize(force) * 1.0f);
+				m_Nodes[i * m_Height + j]->ApplyForce(glm::normalize(force) * 0.1f * (float)CUtilities::GetInstance().GetWindSpeed());
 			}
 		}
 	}

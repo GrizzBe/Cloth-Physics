@@ -38,10 +38,12 @@ CTestScene::CTestScene()
 	m_HeightSlider = 0;
 	m_WidthSlider = 0;
 	m_HookSlider = 0;
+	m_WindSlider = 0;
 	m_fUpdateRate = 0;
 
 	m_bUseWireframe = false;
-	m_bActiveFan = false;
+	m_bActiveFan = true;
+	m_bFanVisuals = false;
 	m_bClothUntangle = false;
 }
 
@@ -66,6 +68,11 @@ CTestScene::~CTestScene()
 	{
 		delete m_Fan;
 		m_Fan = 0;
+	}
+	if (m_FanVisuals != nullptr)
+	{
+		delete m_FanVisuals;
+		m_FanVisuals = 0;
 	}
 	if (m_Pyramid != nullptr)
 	{
@@ -97,11 +104,24 @@ CTestScene::~CTestScene()
 		delete m_HookSlider;
 		m_HookSlider = 0;
 	}
+	if (m_WindSlider != nullptr)
+	{
+		delete m_WindSlider;
+		m_WindSlider = 0;
+	}
 	if (m_txtUpdateRate != nullptr)
 	{
 		delete m_txtUpdateRate;
 		m_txtUpdateRate = 0;
 	}
+	std::vector<CText*>::iterator it = m_txtInstructions.begin();
+	while (it != m_txtInstructions.end())
+	{
+		// Delete vector contents
+		delete* it;
+		it = m_txtInstructions.erase((it));
+	}
+
 	CLightManager::RemoveInstance();
 }
 
@@ -119,6 +139,8 @@ void CTestScene::Initialise()
 	Program_StencilOutline = ShaderLoader::GetInstance().CreateProgram("NormalSpace.vs", "StencilOutline.fs");
 	
 	// Create size slider
+	m_WindAreaSlider = new Slider(glm::vec2(-0.95f, -0.5f), glm::vec2(0.02f, 0.02f), 1, 5, CUtilities::GetInstance().GetWindArea(), "Wind Size");
+	m_WindSlider = new Slider(glm::vec2(-0.95f, -0.6f), glm::vec2(0.02f, 0.02f), 0, 200, CUtilities::GetInstance().GetWindSpeed(), "Wind Speed");
 	m_WidthSlider = new Slider(glm::vec2(-0.95f, -0.7f), glm::vec2(0.02f, 0.02f), 2, 49, CUtilities::GetInstance().GetClothSize().x, "Cloth Width");
 	m_HeightSlider = new Slider(glm::vec2(-0.95f, -0.8f), glm::vec2(0.02f, 0.02f), 2, 49, CUtilities::GetInstance().GetClothSize().y, "Cloth Height");
 
@@ -137,6 +159,12 @@ void CTestScene::Initialise()
 	m_Fan->SetPosition(glm::vec3(0.0f, 0.0f, -5.0f));
 	m_Fan->SetScale(glm::vec3(1.0f , 1.0f , 1.0f));
 	m_Fan->SetTexture("Fan.png");
+
+	// Create fan
+	m_FanVisuals = new Cube();
+	m_FanVisuals->SetPosition(glm::vec3(0.0f, 0.0f, -5.0f));
+	m_FanVisuals->SetScale(glm::vec3(CUtilities::GetInstance().GetWindArea(), CUtilities::GetInstance().GetWindArea(), 50.0f));
+	m_FanVisuals->SetTexture("Wind.png");
 
 	// Create sphere
 	m_Sphere = new Sphere();
@@ -163,12 +191,116 @@ void CTestScene::Initialise()
 	m_Ground->SetReflectivity(1.0f);
 	m_Ground->SetTexture("Map/Ground.jpg");
 
+	// Update rate text
 	std::string font = "Resources/Fonts/VERDANA.TTF";
 	std::string text = std::to_string(m_fUpdateRate);
-
 	glm::vec2 textPosition = glm::vec2(0.0f, CUtilities::GetInstance().GetResolution().y - 26.0f);
+
 	m_txtUpdateRate = new CText(text, font, glm::vec2(24.0f, 24.0f), textPosition, glm::vec3(0.0f, 255.0f, 0.0f), glm::vec2(1.0f, 1.0f));
 
+#pragma region Instructions
+	// Instruction Text
+	glm::vec2 startPos = glm::vec2(20.0f, CUtilities::GetInstance().GetResolution().y - 52.0f);
+	float headerOffset = 10.0f;
+	float spacing = 26.0f;
+	float fontSize = 18.0f;
+	
+	text = "- Mouse Controls:";
+	textPosition = glm::vec2(startPos.x - headerOffset, startPos.y - spacing * m_txtInstructions.size());
+	CText* newText = new CText(text, font, glm::vec2(fontSize, fontSize), textPosition, glm::vec3(0.0f, 255.0f, 0.0f), glm::vec2(1.0f, 1.0f));
+	m_txtInstructions.push_back(newText);
+
+	text = "[M1] : Push Cloth";
+	textPosition = glm::vec2(startPos.x, startPos.y - spacing * m_txtInstructions.size());
+	newText = new CText(text, font, glm::vec2(fontSize, fontSize), textPosition, glm::vec3(0.0f, 255.0f, 0.0f), glm::vec2(1.0f, 1.0f));
+	m_txtInstructions.push_back(newText);
+
+	text = "[M1] + [G] : Grab Cloth";
+	textPosition = glm::vec2(startPos.x, startPos.y - spacing * m_txtInstructions.size());
+	newText = new CText(text, font, glm::vec2(fontSize, fontSize), textPosition, glm::vec3(0.0f, 255.0f, 0.0f), glm::vec2(1.0f, 1.0f));
+	m_txtInstructions.push_back(newText);
+
+	text = "[M1] + [T] : Tear Cloth";
+	textPosition = glm::vec2(startPos.x, startPos.y - spacing * m_txtInstructions.size());
+	newText = new CText(text, font, glm::vec2(fontSize, fontSize), textPosition, glm::vec3(0.0f, 255.0f, 0.0f), glm::vec2(1.0f, 1.0f));
+	m_txtInstructions.push_back(newText);
+
+	text = "[M1] + [I] : Ignite Cloth";
+	textPosition = glm::vec2(startPos.x, startPos.y - spacing * m_txtInstructions.size());
+	newText = new CText(text, font, glm::vec2(fontSize, fontSize), textPosition, glm::vec3(0.0f, 255.0f, 0.0f), glm::vec2(1.0f, 1.0f));
+	m_txtInstructions.push_back(newText);
+
+	text = "- Object Controls";
+	textPosition = glm::vec2(startPos.x - headerOffset, startPos.y - spacing * m_txtInstructions.size());
+	newText = new CText(text, font, glm::vec2(fontSize, fontSize), textPosition, glm::vec3(0.0f, 255.0f, 0.0f), glm::vec2(1.0f, 1.0f));
+	m_txtInstructions.push_back(newText);
+
+	text = "[WASDQE] : Move selected object";
+	textPosition = glm::vec2(startPos.x, startPos.y - spacing * m_txtInstructions.size());
+	newText = new CText(text, font, glm::vec2(fontSize, fontSize), textPosition, glm::vec3(0.0f, 255.0f, 0.0f), glm::vec2(1.0f, 1.0f));
+	m_txtInstructions.push_back(newText);
+
+	text = "[1] : Select fan/cube";
+	textPosition = glm::vec2(startPos.x, startPos.y - spacing * m_txtInstructions.size());
+	newText = new CText(text, font, glm::vec2(fontSize, fontSize), textPosition, glm::vec3(0.0f, 255.0f, 0.0f), glm::vec2(1.0f, 1.0f));
+	m_txtInstructions.push_back(newText);
+
+	text = "[2] : Select sphere";
+	textPosition = glm::vec2(startPos.x, startPos.y - spacing * m_txtInstructions.size());
+	newText = new CText(text, font, glm::vec2(fontSize, fontSize), textPosition, glm::vec3(0.0f, 255.0f, 0.0f), glm::vec2(1.0f, 1.0f));
+	m_txtInstructions.push_back(newText);
+
+	text = "[3] : Select pyramid";
+	textPosition = glm::vec2(startPos.x, startPos.y - spacing * m_txtInstructions.size());
+	newText = new CText(text, font, glm::vec2(fontSize, fontSize), textPosition, glm::vec3(0.0f, 255.0f, 0.0f), glm::vec2(1.0f, 1.0f));
+	m_txtInstructions.push_back(newText);
+
+	text = "[4] : Select capsule";
+	textPosition = glm::vec2(startPos.x, startPos.y - spacing * m_txtInstructions.size());
+	newText = new CText(text, font, glm::vec2(fontSize, fontSize), textPosition, glm::vec3(0.0f, 255.0f, 0.0f), glm::vec2(1.0f, 1.0f));
+	m_txtInstructions.push_back(newText);
+
+	text = "- Misc Controls";
+	textPosition = glm::vec2(startPos.x - headerOffset, startPos.y - spacing * m_txtInstructions.size());
+	newText = new CText(text, font, glm::vec2(fontSize, fontSize), textPosition, glm::vec3(0.0f, 255.0f, 0.0f), glm::vec2(1.0f, 1.0f));
+	m_txtInstructions.push_back(newText);
+
+	text = "[F] : Toggle fan";
+	textPosition = glm::vec2(startPos.x, startPos.y - spacing * m_txtInstructions.size());
+	newText = new CText(text, font, glm::vec2(fontSize, fontSize), textPosition, glm::vec3(0.0f, 255.0f, 0.0f), glm::vec2(1.0f, 1.0f));
+	m_txtInstructions.push_back(newText);
+
+	text = "[X] : Toggle fan visuals";
+	textPosition = glm::vec2(startPos.x, startPos.y - spacing * m_txtInstructions.size());
+	newText = new CText(text, font, glm::vec2(fontSize, fontSize), textPosition, glm::vec3(0.0f, 255.0f, 0.0f), glm::vec2(1.0f, 1.0f));
+	m_txtInstructions.push_back(newText);
+
+	text = "[U] : Toggle untangle";
+	textPosition = glm::vec2(startPos.x, startPos.y - spacing * m_txtInstructions.size());
+	newText = new CText(text, font, glm::vec2(fontSize, fontSize), textPosition, glm::vec3(0.0f, 255.0f, 0.0f), glm::vec2(1.0f, 1.0f));
+	m_txtInstructions.push_back(newText);
+
+	text = "[Y] : Toggle wireframe";
+	textPosition = glm::vec2(startPos.x, startPos.y - spacing * m_txtInstructions.size());
+	newText = new CText(text, font, glm::vec2(fontSize, fontSize), textPosition, glm::vec3(0.0f, 255.0f, 0.0f), glm::vec2(1.0f, 1.0f));
+	m_txtInstructions.push_back(newText);
+
+	text = "[V] : Drop cloth";
+	textPosition = glm::vec2(startPos.x, startPos.y - spacing * m_txtInstructions.size());
+	newText = new CText(text, font, glm::vec2(fontSize, fontSize), textPosition, glm::vec3(0.0f, 255.0f, 0.0f), glm::vec2(1.0f, 1.0f));
+	m_txtInstructions.push_back(newText);
+
+	text = "[.]/[,] : Move rings";
+	textPosition = glm::vec2(startPos.x, startPos.y - spacing * m_txtInstructions.size());
+	newText = new CText(text, font, glm::vec2(fontSize, fontSize), textPosition, glm::vec3(0.0f, 255.0f, 0.0f), glm::vec2(1.0f, 1.0f));
+	m_txtInstructions.push_back(newText);
+
+	text = "[R] : Restart Scene";
+	textPosition = glm::vec2(startPos.x, startPos.y - spacing * m_txtInstructions.size());
+	newText = new CText(text, font, glm::vec2(fontSize, fontSize), textPosition, glm::vec3(0.0f, 255.0f, 0.0f), glm::vec2(1.0f, 1.0f));
+	m_txtInstructions.push_back(newText);
+
+#pragma endregion
 
 	// Create light
 	CLightSource* newLight = new CLightSource(glm::vec3(0.0f, 0.0f, 5.0f));
@@ -191,16 +323,25 @@ void CTestScene::Render()
 	//*******//
 	m_Ground->Render(Program_Object, m_Cam);
 	m_Cloth->Render(m_Cam);
-	m_Fan->Render(Program_Object, m_Cam);
 	m_Sphere->Render(Program_Object, m_Cam);
 	m_Pyramid->Render(Program_Object, m_Cam);
 	m_Capsule->Render(Program_Object, m_Cam);
+	m_Fan->Render(Program_Object, m_Cam);
+
+	if (m_bFanVisuals)
+		m_FanVisuals->Render(Program_Object, m_Cam);
 
 	glDisable(GL_DEPTH_TEST);
 	m_HeightSlider->Render(Program_UI, m_Cam);
 	m_WidthSlider->Render(Program_UI, m_Cam);
 	m_HookSlider->Render(Program_UI, m_Cam);
+	m_WindSlider->Render(Program_UI, m_Cam);
+	m_WindAreaSlider->Render(Program_UI, m_Cam);
 	m_txtUpdateRate->Render();
+	for (auto i : m_txtInstructions)
+	{
+		i->Render();
+	}
 	glEnable(GL_DEPTH_TEST);
 	//*******//
 	glUseProgram(0);
@@ -255,6 +396,11 @@ void CTestScene::Update()
 	}
 
 	m_Fan->Update(m_fDeltaTime);
+	m_FanVisuals->SetPosition(m_Fan->GetPosition());
+	m_FanVisuals->SetScale(glm::vec3(CUtilities::GetInstance().GetWindArea(), CUtilities::GetInstance().GetWindArea(), 50.0f));
+
+	m_FanVisuals->Update(m_fDeltaTime);
+
 	m_Sphere->Update(m_fDeltaTime);
 	m_Pyramid->Update(m_fDeltaTime);
 	m_Capsule->Update(m_fDeltaTime);
@@ -278,6 +424,8 @@ void CTestScene::Update()
 
 	CUtilities::GetInstance().SetClothSize(glm::vec2(m_WidthSlider->Update(m_fDeltaTime), m_HeightSlider->Update(m_fDeltaTime)));
 	CUtilities::GetInstance().SetHookDensity(m_HookSlider->Update(m_fDeltaTime));
+	CUtilities::GetInstance().SetWindSpeed(m_WindSlider->Update(m_fDeltaTime));
+	CUtilities::GetInstance().SetWindArea(m_WindAreaSlider->Update(m_fDeltaTime));
 
 	CAudioManager::GetInstance().Process();
 	glutPostRedisplay();
@@ -343,6 +491,13 @@ void CTestScene::ProcessInput()
 	{
 		CInputHandle::GetInstance().UpdateKeyboardState('f', InputState::Input_Down, 0, 0);
 		m_bActiveFan = !m_bActiveFan;
+	}
+
+	// Toggle fan visuals
+	if (CInputHandle::GetInstance().GetKeyboardState('x') == InputState::Input_DownFirst)
+	{
+		CInputHandle::GetInstance().UpdateKeyboardState('x', InputState::Input_Down, 0, 0);
+		m_bFanVisuals = !m_bFanVisuals;
 	}
 
 	// Toggle cloth untangle

@@ -56,8 +56,6 @@ void ClothNode::Update(float _dT)
 
     // Apply damping
     m_Acceleration -= m_Acceleration * _dT * m_Damping / m_Mass;
-    //m_Acceleration -= velocity * m_Damping / m_Mass;
-
 
     // Apply physics to position
     glm::vec3 newPos = m_Position + velocity + 0.5f * m_Acceleration * powf(_dT, 2);
@@ -66,6 +64,8 @@ void ClothNode::Update(float _dT)
     // Floor
     if (newPos.y < -5.0f)
         newPos.y = -5.0f;
+	if (newPos.y > 5.0f)
+		newPos.y = 5.0f;
     if (newPos.x < -10.0f)
         newPos.x = -10.0f;
     if (newPos.x > 10.0f)
@@ -75,8 +75,6 @@ void ClothNode::Update(float _dT)
     if (newPos.z > 10.0f)
         newPos.z = 10.0f;
     m_Position = newPos;
-
-   
 
     CalculateFire(_dT);
     m_Color = glm::vec3(1.0f, 1.0f - 0.5f * (m_FireLevel / 100.0f), 1.0f - (m_FireLevel / 100.0f));
@@ -261,14 +259,6 @@ void ClothNode::ClearConnections()
 
 void ClothNode::RenderConnectionLines(CCamera* _camera, Side _side)
 {
-    /*if (_side == Side::TOP || _side == Side::RIGHT || _side == Side::BOTTOM || _side == Side::LEFT)
-    {
-        glColor3f(1, 0, 0);
-    }
-    else
-    {
-    }*/
-
     if (m_OnFire)
         glColor3f(m_Color.x, m_Color.y, m_Color.z);
     else

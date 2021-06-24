@@ -18,12 +18,12 @@ ClothQuad::~ClothQuad()
 {
 	if (m_Vertices != nullptr)
 	{
-		delete m_Vertices;
+		delete[] m_Vertices;
 		m_Vertices = 0;
 	}
 	if (m_Indices != nullptr)
 	{
-		delete m_Indices;
+		delete[] m_Indices;
 		m_Indices = 0;
 	}
 }

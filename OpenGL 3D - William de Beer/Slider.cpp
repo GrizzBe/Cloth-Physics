@@ -21,12 +21,6 @@ Slider::Slider(glm::vec2 _pos, glm::vec2 _size, int _minValue, int _maxValue, in
 
 	float newX = (percentage * (maxPos - minPos)) + minPos;
 
-
-	//float minPos = m_CentrePoint.x;
-	//float maxPos = m_CentrePoint.x + (2.0f * 200.0f / screenWidth);
-	//float newX = glm::clamp(percentage * (maxPos - minPos), minPos, maxPos);
-
-	//m_Knob->SetPosition(glm::vec3(newX, m_Knob->GetPosition().y, 0.0f));
 	m_Knob->Initialise(glm::vec2(newX, m_CentrePoint.y), _size, 1);
 	m_Knob->SetTexture("Cube.png");
 
@@ -87,12 +81,9 @@ int Slider::Update(float _dT)
 
 	if (m_Backing->ActivateButton())
 	{
-		std::cout << MouseX << ", " << minPos << ", " << maxPos << std::endl;
-
 		m_Knob->SetPosition(glm::vec3((newX - minPos) + m_CentrePoint.x, m_Knob->GetPosition().y, 0.0f));
 		float percentage = ((newX - minPos) / (maxPos - minPos));
 		m_iCurrentValue = (percentage * (m_MaxValue - m_MinValue)) + m_MinValue;
-		//CUtilities::GetInstance().SetClothSize(glm::vec2(m_iCurrentValue, m_iCurrentValue));
 	}
 
 

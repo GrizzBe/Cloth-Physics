@@ -33,16 +33,23 @@ public:
 
 	static float PlanePointValue(glm::vec3 _normal, glm::vec3 _planePosition, glm::vec3 _pointPosition);
 	static bool PlanePointCollision(glm::vec3 _normal, glm::vec3 _planePosition, glm::vec3 _pointPosition);
+	static bool AABB(glm::vec3 _pointPos, glm::vec3 _cubePos, glm::vec3 _cubeSize);
 
 	glm::vec2 GetResolution();
 	float GetScreenRatio();
 
+
+	int GetWindArea() { return WindArea; };
+	void SetWindArea(int _size) { WindArea = _size; };
 
 	glm::vec2 GetClothSize() { return ClothSize; };
 	void SetClothSize(glm::vec2 _size) { ClothSize = _size; };
 
 	int GetHookDensity() { return HookNo; };
 	void SetHookDensity(int _hookNo) { HookNo = _hookNo; };
+
+	int GetWindSpeed() { return WindSpeed; };
+	void SetWindSpeed(int _windSpeed) { WindSpeed = _windSpeed; };
 
 	struct PlaneInfo {
 		int index;
@@ -59,6 +66,8 @@ private:
 
 	glm::vec2 ClothSize;
 	int HookNo;
+	int WindSpeed;
+	int WindArea;
 };
 
 #endif // __UTILITIES_H__
