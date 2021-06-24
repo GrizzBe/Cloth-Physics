@@ -1,6 +1,19 @@
 #ifndef __CLOTH_NODE_H__
 #define __CLOTH_NODE_H__
-
+// 
+//  Bachelor of Software Engineering 
+//  Media Design School 
+//  Auckland 
+//  New Zealand 
+// 
+//  (c) 2021 Media Design School 
+// 
+//  File Name   :   ClothNode.h
+//  Description :   Cloth node object.
+//  Author      :   William de Beer
+//  Mail        :   William.Beer@mds.ac.nz
+// 
+ // Library Includes 
 #include "Camera.h"
 #include <glew.h>
 #include <freeglut.h>

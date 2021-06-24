@@ -1,11 +1,25 @@
 #ifndef __CLOTH_H__
 #define __CLOTH_H__
-
+// 
+//  Bachelor of Software Engineering 
+//  Media Design School 
+//  Auckland 
+//  New Zealand 
+// 
+//  (c) 2021 Media Design School 
+// 
+//  File Name   :   Cloth.h
+//  Description :   Cloth object.
+//  Author      :   William de Beer 
+//  Mail        :   William.Beer@mds.ac.nz
+// 
+ // Library Includes 
+#include <vector>
+ // Local Includes 
 #include "ClothQuad.h"
 #include "ClothNode.h"
 #include "Camera.h"
 #include "InputHandle.h"
-#include <vector>
 
 struct GrabInfo {
 	int i;

@@ -1,6 +1,20 @@
-#include "ClothNode.h"
+// 
+//  Bachelor of Software Engineering 
+//  Media Design School 
+//  Auckland 
+//  New Zealand 
+// 
+//  (c) 2021 Media Design School 
+// 
+//  File Name   :   ClothNode.cpp
+//  Description :   Cloth node object.
+//  Author      :   William de Beer
+//  Mail        :   William.Beer@mds.ac.nz
+// 
+ // Library Includes 
 #include <iostream>
-
+ // This Includes 
+#include "ClothNode.h"
 ClothNode::ClothNode(glm::vec3 _pos, glm::vec2 _uv)
 {
 	m_UV = _uv;
@@ -32,6 +46,11 @@ ClothNode::~ClothNode()
 {
 }
 
+/***********************
+* Update: Updates Cloth node
+* @author: William de Beer
+* @parameter: Delta time
+********************/
 void ClothNode::Update(float _dT)
 {
     if (m_Static)
@@ -40,13 +59,14 @@ void ClothNode::Update(float _dT)
         return;
     }
     
+	// Cap acceleration
     float magAcceleration = glm::distance(glm::vec3(0, 0, 0), m_Acceleration);
     if (magAcceleration > m_MaxAcceleration)
     {
         m_Acceleration = glm::normalize(m_Acceleration) * m_MaxAcceleration;
     }
 
-    // Get velocity
+    // Cap velocity
     glm::vec3 velocity = m_Position - m_PreviousPos;
     float magVelocity = glm::distance(glm::vec3(0, 0, 0), velocity);
     if (magVelocity > m_MaxSpeed)
@@ -76,35 +96,50 @@ void ClothNode::Update(float _dT)
         newPos.z = 10.0f;
     m_Position = newPos;
 
+	// Call fire update
     CalculateFire(_dT);
+	// Set node colour for mesh
     m_Color = glm::vec3(1.0f, 1.0f - 0.5f * (m_FireLevel / 100.0f), 1.0f - (m_FireLevel / 100.0f));
 }
 
+/***********************
+* ApplyForce: Apply force to node
+* @author: William de Beer
+* @parameter: Force applied
+********************/
 void ClothNode::ApplyForce(glm::vec3 _force)
 {
     m_Acceleration += _force / m_Mass;
 }
 
+/***********************
+* ApplyConstraint: Adjust the node positions to be closer to their resting distance.
+* @author: William de Beer
+* @parameter: The other node, space between them
+********************/
 void ClothNode::ApplyConstraint(ClothNode* _other, float _spacing)
 {
     if (_other == nullptr)
         return;
 
+	// Get node difference
     glm::vec3 delta = m_Position - _other->GetPos();
     float deltaLength = glm::distance(m_Position, _other->GetPos());
     if (deltaLength > _spacing * m_BreakingDistance)
     {
-        m_ToBeDestroyed = true;
+        m_ToBeDestroyed = true; // Check if nodes are far enoguh away to be destroyed
     }
-
     float difference = ((_spacing * m_RestingDistance) - deltaLength) / deltaLength;
 
+	// Get inverse of the mass
     float Im1 = 1 / m_Mass;
     float Im2 = 1 / _other->GetMass();
 
+	// Check if they are static and only usse half force if they are not.
     float thisMult = (_other->GetStatic()) ? 1.0f : 0.5f;
     float otherMult = (m_Static) ? 1.0f : 0.5f;
 
+	// Appply position change if not static
     if (!m_Static)
         m_Position += thisMult * (delta * (Im1 / (Im1 + Im2)) * m_Stiffness * difference);
 
@@ -112,12 +147,21 @@ void ClothNode::ApplyConstraint(ClothNode* _other, float _spacing)
         _other->SetPos(_other->GetPos() - otherMult * (delta * (Im2 / (Im1 + Im2)) * m_Stiffness * difference));
 }
 
+/***********************
+* CalculateFire: Progresses fire on node
+* @author: William de Beer
+* @parameter: Delta time
+********************/
 void ClothNode::CalculateFire(float _dT)
 {
+	// Check if on fire
     if (!m_OnFire)
         return;
 
+	// Update the fire level of node
     m_FireLevel += _dT * 10;
+
+	// Different fire levels for catch fire on different nodes
     if (m_FireLevel > 50)
     {
         if (m_Bottom != nullptr)
@@ -150,17 +194,29 @@ void ClothNode::CalculateFire(float _dT)
             m_Top->CatchFire();
     }
 
+	// If the fire value is above a random heat resistance value then destroy it.
     if (m_FireLevel >= m_fHeatResistance)
     {
         m_ToBeDestroyed = true;
     }
 }
 
+/***********************
+* IsEdge: Return if node is at the egde of the cloth
+* @author: William de Beer
+* @return: Boolean
+********************/
 bool ClothNode::IsEdge()
 {
 	return (m_Top == nullptr || m_Left == nullptr || m_Bottom == nullptr || m_Right == nullptr || m_BR == nullptr || m_TR == nullptr || m_BL == nullptr || m_TL == nullptr);
 }
 
+/***********************
+* GetConnection: Reutrns the connected node on a specified side of the node
+* @author: William de Beer
+* @parameters: Side being returned
+* @return: Node
+********************/
 ClothNode* ClothNode::GetConnection(Side _side)
 {
     switch (_side)
@@ -186,6 +242,11 @@ ClothNode* ClothNode::GetConnection(Side _side)
     }
 }
 
+/***********************
+* SetConnection: Set cloth node to be connected to this node
+* @author: William de Beer
+* @parameter: Side to be connected to, node pointer
+********************/
 void ClothNode::SetConnection(Side _side, ClothNode* _node)
 {
     switch (_side)
@@ -219,8 +280,13 @@ void ClothNode::SetConnection(Side _side, ClothNode* _node)
     }
 }
 
+/***********************
+* ClearConnections: Remove all node connections
+* @author: William de Beer
+********************/
 void ClothNode::ClearConnections()
 {
+	// Remove self from connections
 	if (GetConnection(Side::TOP) != nullptr)
 		GetConnection(Side::TOP)->SetConnection(Side::BOTTOM, nullptr);
 
@@ -245,6 +311,7 @@ void ClothNode::ClearConnections()
 	if (GetConnection(Side::BL) != nullptr)
 		GetConnection(Side::BL)->SetConnection(Side::TR, nullptr);
 
+	// Remove connects
 	SetConnection(Side::TOP, nullptr);
 	SetConnection(Side::RIGHT, nullptr);
 	SetConnection(Side::BOTTOM, nullptr);
@@ -254,16 +321,22 @@ void ClothNode::ClearConnections()
 	SetConnection(Side::TL, nullptr);
 	SetConnection(Side::BL, nullptr);
 
+	// Set connected boolean
     m_Connected = false;
 }
 
+/***********************
+* RenderConnectionLines: Render a gl line between two nodes
+* @author: William de Beer
+* @parameter: Camera and side
+********************/
 void ClothNode::RenderConnectionLines(CCamera* _camera, Side _side)
 {
+	// Set colour of line based on fire level
     if (m_OnFire)
         glColor3f(m_Color.x, m_Color.y, m_Color.z);
     else
         glColor3f(1, 1, 1);
-
 
     ClothNode* node = GetConnection(_side);
     if (node != nullptr)

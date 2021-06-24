@@ -1,6 +1,20 @@
+// 
+//  Bachelor of Software Engineering 
+//  Media Design School 
+//  Auckland 
+//  New Zealand 
+// 
+//  (c) 2021 Media Design School 
+// 
+//  File Name   :   Slider.h
+//  Description :   Slider object.
+//  Author      :   William de Beer
+//  Mail        :   William.Beer@mds.ac.nz
+// 
+ // This Includes
 #include "Slider.h"
+ // Local Includes
 #include "Utilities.h"
-
 Slider::Slider(glm::vec2 _pos, glm::vec2 _size, int _minValue, int _maxValue, int _startValue, std::string _label)
 {
 	m_CentrePoint = _pos;
@@ -63,6 +77,12 @@ Slider::~Slider()
 	}
 }
 
+/***********************
+* Update: Updates slider
+* @author: William de Beer
+* @parameter: Delta time
+* @return: integer
+********************/
 int Slider::Update(float _dT)
 {
 	float screenWidth = CUtilities::GetInstance().GetResolution().x;
@@ -71,6 +91,7 @@ int Slider::Update(float _dT)
 	float MouseX = (2.0f * (float)CInputHandle::GetInstance().GetMouseX()) / screenWidth - 1.0f;
 	float MouseY = 1.0f - (2.0f * (float)CInputHandle::GetInstance().GetMouseY()) / screenHeight;
 
+	// Get position of mouse within slider
 	float minPos = m_CentrePoint.x;
 	float maxPos = m_CentrePoint.x + (2.0f * 200.0f / screenWidth);
 	float newX = glm::clamp(MouseX, minPos, maxPos);
@@ -79,14 +100,14 @@ int Slider::Update(float _dT)
 	maxPos = (maxPos + 1.0f);
 	newX = (newX + 1.0f);
 
-	if (m_Backing->ActivateButton())
+	if (m_Backing->ActivateButton()) // Check if clicking
 	{
 		m_Knob->SetPosition(glm::vec3((newX - minPos) + m_CentrePoint.x, m_Knob->GetPosition().y, 0.0f));
 		float percentage = ((newX - minPos) / (maxPos - minPos));
 		m_iCurrentValue = (percentage * (m_MaxValue - m_MinValue)) + m_MinValue;
 	}
 
-
+	// Set text of slider
 	std::string Text = std::to_string(m_iCurrentValue);
 	m_Text->SetText(Text);
 	m_Backing->Process();
@@ -95,6 +116,11 @@ int Slider::Update(float _dT)
 	return m_iCurrentValue;
 }
 
+/***********************
+* Render: Renders slider
+* @author: William de Beer
+* @parameter: Program to use, pointer to camera
+********************/
 void Slider::Render(GLuint _program, CCamera* _cam)
 {
 	m_Backing->Draw(_program, _cam);

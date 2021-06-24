@@ -1,8 +1,24 @@
+// 
+//  Bachelor of Software Engineering 
+//  Media Design School 
+//  Auckland 
+//  New Zealand 
+// 
+//  (c) 2021 Media Design School 
+// 
+//  File Name   :   Cloth.h
+//  Description :   Cloth object.
+//  Author      :   William de Beer 
+//  Mail        :   William.Beer@mds.ac.nz
+// 
+ // This Includes 
 #include "Cloth.h"
+ // Local Includes 
 #include "Utilities.h"
 
 Cloth::Cloth(int _width, int _height)
 {
+	// Creat program
 	m_Program = ShaderLoader::GetInstance().CreateProgram("ColorSpace.vs", "Cloth.fs");
 
 	PrevMousePosX = 0;
@@ -69,6 +85,7 @@ Cloth::Cloth(int _width, int _height)
 		}
 	}
 
+	// Create visuals
 	m_Quad = new ClothQuad(m_Width, m_Height, m_Nodes);
 }
 
@@ -96,6 +113,11 @@ Cloth::~Cloth()
 	}
 }
 
+/***********************
+* Render: Renders cloth
+* @author: William de Beer
+* @parameter: Pointer to camera
+********************/
 void Cloth::Render(CCamera* _camera)
 {
 	m_Quad->Render(m_Program, _camera);
@@ -106,9 +128,11 @@ void Cloth::Render(CCamera* _camera)
 		for (int j = 0; j < m_Height; j++)
 		{
 			ClothNode* currentNode = m_Nodes[i * m_Height + j];
+			// Check if the node is an edge node.
 			if (!currentNode->GetConnectionStatus() || (!currentNode->IsEdge()))
 				continue;
 
+			// Render all line connections
 			currentNode->RenderConnectionLines(_camera, Side::TOP);
 			currentNode->RenderConnectionLines(_camera, Side::RIGHT);
 			currentNode->RenderConnectionLines(_camera, Side::BOTTOM);
@@ -122,14 +146,18 @@ void Cloth::Render(CCamera* _camera)
 	glEnd();
 }
 
+/***********************
+* Update: Updates cloth
+* @author: William de Beer
+* @parameter: Delta time, pointer to a camera
+********************/
 void Cloth::Update(float _dT, CCamera* _camera)
 {
+	// Check if user is holding left click
 	if (CInputHandle::GetInstance().GetMouseButtonState(GLUT_LEFT_BUTTON) == InputState::Input_Down || 
 		CInputHandle::GetInstance().GetMouseButtonState(GLUT_LEFT_BUTTON) == InputState::Input_DownFirst)
 	{
 		bool endLoop = false;
-
-		// Apply external force
 		
 		for (int j = 0; j < m_Height; j++)
 		{
@@ -137,28 +165,28 @@ void Cloth::Update(float _dT, CCamera* _camera)
 			{
 				if (m_Nodes[i * m_Height + j] != nullptr)
 				{
-					if (!m_Nodes[i * m_Height + j]->GetConnectionStatus())
+					if (!m_Nodes[i * m_Height + j]->GetConnectionStatus()) // Check if node is connected
 						continue;
 
-					if (_camera->CheckIntersection(m_Nodes[i * m_Height + j]->GetPos(), m_Spacing))
+					if (_camera->CheckIntersection(m_Nodes[i * m_Height + j]->GetPos(), m_Spacing)) // Raycast intersection
 					{
-						if (CInputHandle::GetInstance().GetKeyboardState('t') == InputState::Input_Down)
+						if (CInputHandle::GetInstance().GetKeyboardState('t') == InputState::Input_Down) // Tearing
 						{
 							TearCloth(i, j);
 
 							endLoop = true;
 							break;
 						}
-						else if(CInputHandle::GetInstance().GetKeyboardState('i') == InputState::Input_Down)
+						else if(CInputHandle::GetInstance().GetKeyboardState('i') == InputState::Input_Down) // Igniting
 						{
 							IgniteCloth(i, j);
 
 							endLoop = true;
 							break;
 						}
-						else if (CInputHandle::GetInstance().GetKeyboardState('g') == InputState::Input_Down)
+						else if (CInputHandle::GetInstance().GetKeyboardState('g') == InputState::Input_Down) // Grabbing
 						{
-							if (!grab.grabbing)
+							if (!grab.grabbing) // Apply node information
 							{
 								grab.grabbing = true;
 								grab.i = i;
@@ -169,7 +197,7 @@ void Cloth::Update(float _dT, CCamera* _camera)
 							endLoop = true;
 							break;
 						}
-						else
+						else // Push
 						{
 							glm::vec3 externalForce(-_camera->GetRayDirection() * 5000.0f);
 							m_Nodes[i * m_Height + j]->ApplyForce(externalForce);
@@ -183,7 +211,7 @@ void Cloth::Update(float _dT, CCamera* _camera)
 	}
 
 
-
+	// Continuation of grabbing
 	if (CInputHandle::GetInstance().GetMouseButtonState(GLUT_LEFT_BUTTON) == InputState::Input_Down && 
 		CInputHandle::GetInstance().GetKeyboardState('g') == InputState::Input_Down && grab.grabbing)
 	{
@@ -196,7 +224,7 @@ void Cloth::Update(float _dT, CCamera* _camera)
 		grab.grabbing = false;
 	}
 
-
+	// Move cloth rings
 	if (CInputHandle::GetInstance().GetKeyboardState(',') == InputState::Input_Down)
 	{
 
@@ -218,7 +246,7 @@ void Cloth::Update(float _dT, CCamera* _camera)
 			}
 		}
 
-		if (inRange)
+		if (inRange) // Stop cloth from moving too far out
 		{
 			for (auto it : m_vRings)
 			{
@@ -241,13 +269,16 @@ void Cloth::Update(float _dT, CCamera* _camera)
 				glm::vec3 gravityForce(0, -m_Gravity * m_Nodes[i * m_Height + j]->GetMass(), 0);
 				m_Nodes[i * m_Height + j]->ApplyForce(gravityForce);
 
+				// Update node
 				m_Nodes[i * m_Height + j]->Update(_dT);
 
+				// Apply constraints to node
 				m_Nodes[i * m_Height + j]->ApplyConstraint(m_Nodes[i * m_Height + j]->GetConnection(Side::TOP), m_Spacing);
 				m_Nodes[i * m_Height + j]->ApplyConstraint(m_Nodes[i * m_Height + j]->GetConnection(Side::RIGHT), m_Spacing);
 				m_Nodes[i * m_Height + j]->ApplyConstraint(m_Nodes[i * m_Height + j]->GetConnection(Side::TR), sqrtf(pow(m_Spacing, 2) * 2.0f));
 				m_Nodes[i * m_Height + j]->ApplyConstraint(m_Nodes[i * m_Height + j]->GetConnection(Side::BR), sqrtf(pow(m_Spacing, 2) * 2.0f));
 			
+				// Check if it is to be destroyed and destroy it.
 				if (m_Nodes[i * m_Height + j]->GetToBeDestroyed())
 				{
 					if (m_Nodes[i * m_Height + j]->GetConnectionStatus())
@@ -256,10 +287,14 @@ void Cloth::Update(float _dT, CCamera* _camera)
 			}
 		}
 	}
-
+	// Update the mesh 
 	m_Quad->Update(_dT);
 }
 
+/***********************
+* DropCloth: Releases cloth hooks
+* @author: William de Beer
+********************/
 void Cloth::DropCloth()
 {
 	for (auto it : m_vRings)
@@ -268,6 +303,11 @@ void Cloth::DropCloth()
 	}
 }
 
+/***********************
+* CalculateCollision: Allows the cloth to collider other objects
+* @author: William de Beer
+* @parameter: Type of object, object position, object size.
+********************/
 void Cloth::CalculateCollision(CollisionType _type, glm::vec3 _pos, glm::vec3 _scale)
 {
 	glm::vec3 size;
@@ -276,19 +316,19 @@ void Cloth::CalculateCollision(CollisionType _type, glm::vec3 _pos, glm::vec3 _s
 	float collisionBonus = 0.025f;
 	switch (_type)
 	{
-	case CollisionType::CUBE:
+	case CollisionType::CUBE: // CUBE
 		size = (_scale / 2.0f) + collisionBonus;
 		for (int j = 0; j < m_Height; j++)
 		{
 			for (int i = 0; i < m_Width; i++)
 			{
-				if (m_Nodes[i * m_Height + j] != nullptr && !m_Nodes[i * m_Height + j]->GetStatic())
+				if (m_Nodes[i * m_Height + j] != nullptr && !m_Nodes[i * m_Height + j]->GetStatic()) // Check if it is ring node
 				{
-					if (CUtilities::AABB(m_Nodes[i * m_Height + j]->GetPos(), _pos, size))
+					if (CUtilities::AABB(m_Nodes[i * m_Height + j]->GetPos(), _pos, size)) // AABB collision
 					{
 						int closestSide = -1;
 						float furthestDistanceToCenter = 0.0f;
-						// Find closest side
+						// Find closest side of the cube to the point
 						if ((m_Nodes[i * m_Height + j]->GetPos().x >= (_pos.x - size.x) && m_Nodes[i * m_Height + j]->GetPos().x <= (_pos.x + size.x)))
 						{
 							float distanceToCenter = abs(m_Nodes[i * m_Height + j]->GetPos().x - _pos.x);
@@ -317,9 +357,11 @@ void Cloth::CalculateCollision(CollisionType _type, glm::vec3 _pos, glm::vec3 _s
 							}
 						}
 
+						// Set position based on closest side
 						switch (closestSide)
 						{
-						case 1:
+						// X
+						case 1: 
 							if (m_Nodes[i * m_Height + j]->GetPos().x < _pos.x)
 							{
 								m_Nodes[i * m_Height + j]->SetPos(glm::vec3(_pos.x - size.x,
@@ -333,6 +375,7 @@ void Cloth::CalculateCollision(CollisionType _type, glm::vec3 _pos, glm::vec3 _s
 									m_Nodes[i * m_Height + j]->GetPos().z));
 							}
 							break;
+						// Y
 						case 2:
 							if (m_Nodes[i * m_Height + j]->GetPos().y < _pos.y)
 							{
@@ -347,6 +390,7 @@ void Cloth::CalculateCollision(CollisionType _type, glm::vec3 _pos, glm::vec3 _s
 									m_Nodes[i * m_Height + j]->GetPos().z));
 							}
 							break;
+						// Z
 						case 3:
 							if (m_Nodes[i * m_Height + j]->GetPos().z < _pos.z)
 							{
@@ -369,16 +413,16 @@ void Cloth::CalculateCollision(CollisionType _type, glm::vec3 _pos, glm::vec3 _s
 			}
 		}
 		break;
-	case CollisionType::SPHERE:
+	case CollisionType::SPHERE: // SPHERE
 		radius = _scale.x + collisionBonus;
 		for (int j = 0; j < m_Height; j++)
 		{
 			for (int i = 0; i < m_Width; i++)
 			{
-				if (m_Nodes[i * m_Height + j] != nullptr && !m_Nodes[i * m_Height + j]->GetStatic())
+				if (m_Nodes[i * m_Height + j] != nullptr && !m_Nodes[i * m_Height + j]->GetStatic()) // Check if node is static
 				{
 					float distance = glm::distance(_pos, m_Nodes[i * m_Height + j]->GetPos());
-					if (distance <= (radius))
+					if (distance <= (radius)) // Check if in radius
 					{
 						glm::vec3 direction = glm::normalize(m_Nodes[i * m_Height + j]->GetPos() - _pos);
 						m_Nodes[i * m_Height + j]->SetPos(_pos + direction * radius);
@@ -387,8 +431,8 @@ void Cloth::CalculateCollision(CollisionType _type, glm::vec3 _pos, glm::vec3 _s
 			}
 		}
 		break;
-	case CollisionType::CLOTHNODE:
-		radius = _scale.x;
+	case CollisionType::CLOTHNODE: // CLOTHNODE
+		radius = _scale.x; 
 		for (int j = 0; j < m_Height; j++)
 		{
 			for (int i = 0; i < m_Width; i++)
@@ -408,29 +452,31 @@ void Cloth::CalculateCollision(CollisionType _type, glm::vec3 _pos, glm::vec3 _s
 			}
 		}
 		break;
-	case CollisionType::PYRAMID:
+	case CollisionType::PYRAMID: // PYRAMID
 		size = _scale + collisionBonus;
 		for (int j = 0; j < m_Height; j++)
 		{
 			for (int i = 0; i < m_Width; i++)
 			{
-				if (m_Nodes[i * m_Height + j] != nullptr && !m_Nodes[i * m_Height + j]->GetStatic())
+				if (m_Nodes[i * m_Height + j] != nullptr && !m_Nodes[i * m_Height + j]->GetStatic()) // Check if node is static
 				{
+					// Create information for each plane of object
 					CUtilities::PlaneInfo plane[5];
 					for (int k = 0; k < 4; k++)
 					{
 						plane[k].index = k;
-						plane[k].position = _pos + glm::vec3(0.0f, 0.25f, 0.0f) * size.y;
+						plane[k].position = _pos + glm::vec3(0.0f, 0.25f, 0.0f) * size.y; // Set position
 					}
 					plane[4].position = _pos - glm::vec3(0.0f, 0.25f, 0.0f) * size.y * 1.5f;
 
+					// Set normals
 					plane[0].normal = glm::normalize(glm::vec3(glm::vec3(0.0f, 0.5f, -0.5f)));
 					plane[1].normal = glm::normalize(glm::vec3(glm::vec3(0.5f, 0.5f, 0.0f)));
 					plane[2].normal = glm::normalize(glm::vec3(glm::vec3(0.0f, 0.5f, 0.5f)));
 					plane[3].normal = glm::normalize(glm::vec3(glm::vec3(-0.5f, 0.5f, 0.0f)));
 					plane[4].normal = glm::normalize(glm::vec3(glm::vec3(0.0f, -1.0f, 0.0f)));
 
-
+					// Check if object is behind all planes
 					if (CUtilities::PlanePointCollision(plane[0].normal, plane[0].position, m_Nodes[i * m_Height + j]->GetPos()) &&
 						CUtilities::PlanePointCollision(plane[1].normal, plane[1].position, m_Nodes[i * m_Height + j]->GetPos()) &&
 						CUtilities::PlanePointCollision(plane[2].normal, plane[2].position, m_Nodes[i * m_Height + j]->GetPos()) &&
@@ -440,6 +486,7 @@ void Cloth::CalculateCollision(CollisionType _type, glm::vec3 _pos, glm::vec3 _s
 						int closestSide = -1;
 						float closestDistance = 100.0f;
 						
+						// Find closest plane
 						for (int k = 0; k < 5; k++)
 						{
 							if (CUtilities::PlanePointCollision(plane[k].normal, plane[k].position, m_Nodes[i * m_Height + j]->GetPos()))
@@ -452,6 +499,7 @@ void Cloth::CalculateCollision(CollisionType _type, glm::vec3 _pos, glm::vec3 _s
 								}
 							}
 						}
+						// Set new node location
 						m_Nodes[i * m_Height + j]->SetPos(m_Nodes[i * m_Height + j]->GetPos() + plane[closestSide].normal * (closestDistance));
 
 					}
@@ -459,16 +507,16 @@ void Cloth::CalculateCollision(CollisionType _type, glm::vec3 _pos, glm::vec3 _s
 			}
 		}
 		break;
-	case CollisionType::CAPSULE:
+	case CollisionType::CAPSULE: // CAPSULE
 		radius = _scale.x + collisionBonus;
 		height = _scale.y;
-		//_pos += glm::vec3(0, 1, 0) * 2.0f;
 		for (int j = 0; j < m_Height; j++)
 		{
 			for (int i = 0; i < m_Width; i++)
 			{
-				if (m_Nodes[i * m_Height + j] != nullptr && !m_Nodes[i * m_Height + j]->GetStatic())
+				if (m_Nodes[i * m_Height + j] != nullptr && !m_Nodes[i * m_Height + j]->GetStatic()) // Check if node is static
 				{
+					// Store positions for each end of capsule
 					glm::vec3 capsuleEnd[2];
 					capsuleEnd[0] = _pos - (glm::vec3(0, 1, 0) * height * 0.5f);
 					capsuleEnd[1] = _pos + (glm::vec3(0, 1, 0) * height * 0.5f);
@@ -477,12 +525,12 @@ void Cloth::CalculateCollision(CollisionType _type, glm::vec3 _pos, glm::vec3 _s
 
 					glm::vec3 point = m_Nodes[i * m_Height + j]->GetPos();
 					
+					// Get closest point in line
 					float s = glm::dot(capsuleEnd[1] - capsuleEnd[0], point - capsuleEnd[0]) / (height * 0.5f);
-
 					s = glm::clamp(s, 0.0f, 1.0f);
-
 					glm::vec3 p = capsuleEnd[0] + s * (capsuleEnd[1] - capsuleEnd[0]);
 
+					// Check distance
 					float distance = glm::distance(point, p);
 					if (distance <= (radius))
 					{
@@ -498,6 +546,10 @@ void Cloth::CalculateCollision(CollisionType _type, glm::vec3 _pos, glm::vec3 _s
 	}
 }
 
+/***********************
+* Untangle: Calls collision between all nodes
+* @author: William de Beer
+********************/
 void Cloth::Untangle()
 {
 	for (int j = 0; j < m_Height; j++)
@@ -512,6 +564,11 @@ void Cloth::Untangle()
 	}
 }
 
+/***********************
+* ApplyWind: Apply wind to all nodes in an area
+* @author: William de Beer
+* @parameter: Position of the fan 
+********************/
 void Cloth::ApplyWind(glm::vec3 _windOrigin)
 {
 	for (int j = 0; j < m_Height; j++)
@@ -520,6 +577,7 @@ void Cloth::ApplyWind(glm::vec3 _windOrigin)
 		{
 			if (m_Nodes[i * m_Height + j] != nullptr)
 			{
+				// Chehck
 				if (!CUtilities::AABB(m_Nodes[i * m_Height + j]->GetPos(), _windOrigin, 
 					glm::vec3(CUtilities::GetInstance().GetWindArea() / 2.0f, CUtilities::GetInstance().GetWindArea() / 2.0f, 50.0f)))
 					continue;
@@ -532,6 +590,11 @@ void Cloth::ApplyWind(glm::vec3 _windOrigin)
 	}
 }
 
+/***********************
+* TearCloth: Destroys the targeted node
+* @author: William de Beer
+* @parameter: Node index
+********************/
 void Cloth::TearCloth(int _i, int _j)
 {
 	if (_j - 1 >= 0 && m_Nodes[_i * m_Height + _j]->GetConnection(Side::TOP) != nullptr)
@@ -562,6 +625,11 @@ void Cloth::TearCloth(int _i, int _j)
 	m_Nodes[_i * m_Height + _j]->ClearConnections();
 }
 
+/***********************
+* IgniteCloth: Ignites targeted node
+* @author: William de Beer
+* @parameter: Node index
+********************/
 void Cloth::IgniteCloth(int _i, int _j)
 {
 	m_Nodes[_i * m_Height + _j]->CatchFire();

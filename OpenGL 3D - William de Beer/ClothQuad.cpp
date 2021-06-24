@@ -1,5 +1,18 @@
+// 
+//  Bachelor of Software Engineering 
+//  Media Design School 
+//  Auckland 
+//  New Zealand 
+// 
+//  (c) 2021 Media Design School 
+// 
+//  File Name   :   ClothQuad.h
+//  Description :   Quad object.
+//  Author      :   William de Beer 
+//  Mail        :   William.Beer@mds.ac.nz
+// 
+ // This Includes 
 #include "ClothQuad.h"
-
 ClothQuad::ClothQuad(int _width, int _height, ClothNode** _nodes)
 {
 	SetTexture("Picnic.jpg");
@@ -28,6 +41,11 @@ ClothQuad::~ClothQuad()
 	}
 }
 
+/***********************
+* Render: Renders object
+* @author: William de Beer
+* @parameter: Program to use, pointer to camera
+********************/
 void ClothQuad::Render(GLuint _program, CCamera* _cam)
 {
 	glUseProgram(_program);
@@ -60,8 +78,14 @@ void ClothQuad::Render(GLuint _program, CCamera* _cam)
 	glUseProgram(0);
 }
 
+/***********************
+* Update: Updates object
+* @author: William de Beer
+* @parameter: Delta time
+********************/
 void ClothQuad::Update(float _dT)
 {
+	// Update vertices
 	for (unsigned int i = 0; i < m_Width * m_Height * 8; i += 8)
 	{
 		m_Vertices[i + 0] = m_ClothNodes[i / 8]->GetPos().x;
@@ -74,6 +98,7 @@ void ClothQuad::Update(float _dT)
 		m_Vertices[i + 7] = m_ClothNodes[i / 8]->GetUV().y;
 	}
 
+	// Update indices
 	for (unsigned int i = 0; i < m_AllIndices.size() * 3; i+=3)
 	{
 		m_Indices[i + 0] = m_AllIndices.at(i / 3).x;
@@ -82,13 +107,22 @@ void ClothQuad::Update(float _dT)
 	}
 }
 
+/***********************
+* CreateVertices: Create vertices array
+* @author: William de Beer
+********************/
 void ClothQuad::CreateVertices()
 {
 	m_Vertices = new GLfloat[m_Width * m_Height * 8];
 }
 
+/***********************
+* CreateIndices: Create indices vector & array
+* @author: William de Beer
+********************/
 void ClothQuad::CreateIndices()
 {
+	// Create vector of triangle vertices
 	for (unsigned int i = 0; i < m_Width - 1; i++)
 	{
 		unsigned int row1 = i * (m_Height);
@@ -102,6 +136,10 @@ void ClothQuad::CreateIndices()
 	m_Indices = new GLuint[m_AllIndices.size() * 3];
 }
 
+/***********************
+* CreateVAO: Create VAO for cloth
+* @author: William de Beer
+********************/
 void ClothQuad::CreateVAO()
 {
 	// VAO
@@ -129,13 +167,18 @@ void ClothQuad::CreateVAO()
 	glEnableVertexAttribArray(2);
 }
 
+/***********************
+* DestroySection: Destroy section of cloth containing index
+* @author: William de Beer
+********************/
 void ClothQuad::DestroySection(int _pos)
 {
 	auto it = m_AllIndices.begin();
 	while (it != m_AllIndices.end())
 	{
+		// Check if contains index
 		if ((*it).x == _pos || (*it).y == _pos || (*it).z == _pos)
-			it = m_AllIndices.erase(it);
+			it = m_AllIndices.erase(it); // Erase
 		else
 			it++;
 	}

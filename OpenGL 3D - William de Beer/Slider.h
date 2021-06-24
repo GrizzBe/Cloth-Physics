@@ -1,6 +1,19 @@
 #ifndef __SLIDER_H__
 #define __SLIDER_H__
-
+// 
+//  Bachelor of Software Engineering 
+//  Media Design School 
+//  Auckland 
+//  New Zealand 
+// 
+//  (c) 2021 Media Design School 
+// 
+//  File Name   :   Slider.h
+//  Description :   Slider object.
+//  Author      :   William de Beer
+//  Mail        :   William.Beer@mds.ac.nz
+// 
+ // Local Includes
 #include "Button.h"
 #include "Text.h"
 
