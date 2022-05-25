@@ -24,8 +24,8 @@ CCamera::CCamera(bool _game)
 {
 	m_bIsGame = _game;
 	TextureID = 0;
-	PrevMousePosX = CInputHandle::GetInstance().GetMouseX();
-	PrevMousePosY = CInputHandle::GetInstance().GetMouseY();
+	PrevMousePosX = (int)CInputHandle::GetInstance().GetMouseX();
+	PrevMousePosY = (int)CInputHandle::GetInstance().GetMouseY();
 	Radius = 10.0f;
 	CurrentOffset = 0;
 
@@ -74,11 +74,11 @@ void CCamera::Process(float _x, float _y, float _z)
 {
 	if (m_bIsGame) // Check if the camera is being used in the game or in the menu
 	{
-		float CurrentMousePosX = CInputHandle::GetInstance().GetMouseX();
+		float CurrentMousePosX = (float)CInputHandle::GetInstance().GetMouseX();
 		float DeltaMousePosX = PrevMousePosX - CurrentMousePosX;
 		PrevMousePosX = CurrentMousePosX;
 
-		float CurrentMousePosY = CInputHandle::GetInstance().GetMouseY();
+		float CurrentMousePosY = (float)CInputHandle::GetInstance().GetMouseY();
 		float DeltaMousePosY = PrevMousePosY - CurrentMousePosY;
 		PrevMousePosY = CurrentMousePosY;
 
@@ -177,6 +177,7 @@ bool CCamera::CheckIntersection(glm::vec3 _objPos, float _radius)
 	{
 		return false;// no intersection
 	}
+	return false;
 }
 
 /***********************

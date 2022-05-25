@@ -30,7 +30,7 @@ ClothNode::ClothNode(glm::vec3 _pos, glm::vec2 _uv)
     m_ToBeDestroyed = false;
     m_FireLevel = 0.0f;
 
-    m_fHeatResistance = rand() % 20 + 80;
+    m_fHeatResistance = (float)(rand() % 20 + 80);
 
     m_Top = nullptr;
     m_Left = nullptr;

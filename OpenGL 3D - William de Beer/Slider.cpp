@@ -104,7 +104,7 @@ int Slider::Update(float _dT)
 	{
 		m_Knob->SetPosition(glm::vec3((newX - minPos) + m_CentrePoint.x, m_Knob->GetPosition().y, 0.0f));
 		float percentage = ((newX - minPos) / (maxPos - minPos));
-		m_iCurrentValue = (percentage * (m_MaxValue - m_MinValue)) + m_MinValue;
+		m_iCurrentValue = (int)((percentage * (m_MaxValue - m_MinValue)) + m_MinValue);
 	}
 
 	// Set text of slider

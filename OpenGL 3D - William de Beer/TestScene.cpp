@@ -34,11 +34,20 @@ CTestScene::CTestScene()
 	m_Ground = 0;
 	m_Cam = 0;
 	m_Cloth = 0;
+	m_Capsule = 0;
+	m_Fan = 0;
+	m_FanVisuals = 0;
+	m_Pyramid = 0;
+	m_txtUpdateRate = 0;
+	m_Sphere = 0;
+
+	object = ControlledObject::FAN;
 
 	m_HeightSlider = 0;
 	m_WidthSlider = 0;
 	m_HookSlider = 0;
 	m_WindSlider = 0;
+	m_WindAreaSlider = 0;
 	m_fUpdateRate = 0;
 
 	m_bUseWireframe = false;
@@ -141,14 +150,14 @@ void CTestScene::Initialise()
 	// Create size slider
 	m_WindAreaSlider = new Slider(glm::vec2(-0.95f, -0.5f), glm::vec2(0.02f, 0.02f), 1, 5, CUtilities::GetInstance().GetWindArea(), "Wind Size");
 	m_WindSlider = new Slider(glm::vec2(-0.95f, -0.6f), glm::vec2(0.02f, 0.02f), 0, 200, CUtilities::GetInstance().GetWindSpeed(), "Wind Speed");
-	m_WidthSlider = new Slider(glm::vec2(-0.95f, -0.7f), glm::vec2(0.02f, 0.02f), 2, 49, CUtilities::GetInstance().GetClothSize().x, "Cloth Width");
-	m_HeightSlider = new Slider(glm::vec2(-0.95f, -0.8f), glm::vec2(0.02f, 0.02f), 2, 49, CUtilities::GetInstance().GetClothSize().y, "Cloth Height");
+	m_WidthSlider = new Slider(glm::vec2(-0.95f, -0.7f), glm::vec2(0.02f, 0.02f), 2, 49, (int)CUtilities::GetInstance().GetClothSize().x, "Cloth Width");
+	m_HeightSlider = new Slider(glm::vec2(-0.95f, -0.8f), glm::vec2(0.02f, 0.02f), 2, 49, (int)CUtilities::GetInstance().GetClothSize().y, "Cloth Height");
 
 	// Create hook slider
 	m_HookSlider = new Slider(glm::vec2(-0.95f, -0.9f), glm::vec2(0.02f, 0.02f), 1, 25, CUtilities::GetInstance().GetHookDensity(), "Hook Density");
 
 	// Create cloth
-	m_Cloth = new Cloth(CUtilities::GetInstance().GetClothSize().x, CUtilities::GetInstance().GetClothSize().y);
+	m_Cloth = new Cloth((int)CUtilities::GetInstance().GetClothSize().x, (int)CUtilities::GetInstance().GetClothSize().y);
 
 	// Create camera
 	m_Cam = new CCamera(true);

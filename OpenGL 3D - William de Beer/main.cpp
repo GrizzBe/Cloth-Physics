@@ -34,8 +34,8 @@ int main(int argc, char** argv)
 {
 	srand((unsigned int)time(NULL));
 
-	unsigned int ScreenWidth = CUtilities::GetInstance().GetResolution().x;
-	unsigned int ScreenHeight = CUtilities::GetInstance().GetResolution().y;
+	unsigned int ScreenWidth = (int)CUtilities::GetInstance().GetResolution().x;
+	unsigned int ScreenHeight = (int)CUtilities::GetInstance().GetResolution().y;
 
 	// Create display
 	glutInit(&argc, argv);
